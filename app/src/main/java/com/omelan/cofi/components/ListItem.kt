@@ -40,7 +40,7 @@ fun ListItemBackground(
         shape = shape.shape,
     ) {
         Column(
-            modifier
+            Modifier
                 .clickable(
                     onClick = onClick,
                     role = Role.Button,
@@ -73,7 +73,7 @@ fun ListItem(
                 .padding(horizontal = Spacing.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val modifier = Modifier
+            val iconModifier = Modifier
                 .clip(RoundedCornerShape(100))
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .padding(Spacing.normal)
@@ -83,14 +83,14 @@ fun ListItem(
                     imageVector = iconVector,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = modifier,
+                    modifier = iconModifier,
                 )
             } else if (iconResource != null) {
                 Icon(
                     painter = painterResource(id = iconResource),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = modifier,
+                    modifier = iconModifier,
                 )
             }
             Column(

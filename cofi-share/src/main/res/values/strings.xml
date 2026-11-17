@@ -56,9 +56,12 @@
         <item quantity="one">Restored %d recipe</item>
         <item quantity="other">Restored %d recipes</item>
     </plurals>
+    <string name="settings_restore_error">Could not restore recipes from this file</string>
     <string name="button_show">Show</string>
+    <string name="button_back">Back</string>
     <string name="step_add_remove">Remove</string>
     <string name="timer_enjoy">Enjoy your coffee</string>
+    <string name="timer_start">Start</string>
     <string name="prepopulate_v60_name">Ultimate V60</string>
     <string name="prepopulate_v60_description">Recipe created by: James Hoffmann
 \nSource: https://youtu.be/AI4ynXzkSQo
@@ -124,6 +127,8 @@
     <string name="settings_timer_item">Timer settings</string>
     <string name="settings_backup_item">Backup/Restore</string>
     <string name="settings_appearance_item">Appearance</string>
+    <string name="settings_dynamic_theme_item">Dynamic theme</string>
+    <string name="settings_wavy_timer_item">Wavy timer</string>
     <string name="settings_step_vibrate_item">Step change vibration</string>
     <string name="recipe_details_multiply_time">Time multiplier</string>
     <string name="recipe_details_multiply_weight">Weight multiplier</string>
@@ -161,4 +166,10 @@
     <string name="notification_action_continue">Continue</string>
     <string name="notification_action_stop">Stop</string>
     <string name="notification_action_pause">Pause</string>
+    <string name="step_add_duration_info">Duration info</string>
+    <string name="step_add_move_up">Move step up</string>
+    <string name="step_add_move_down">Move step down</string>
+    <string name="infoBox_dismiss">Dismiss</string>
+    <string name="description_expand">Expand</string>
+    <string name="description_collapse">Collapse</string>
 </resources>

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.omelan.cofi.R
 import com.omelan.cofi.components.CofiSwitch
 import com.omelan.cofi.components.Material3Dialog
@@ -42,23 +43,29 @@ import kotlinx.coroutines.launch
 fun TimerSettings(goBack: () -> Unit) {
     val context = LocalContext.current
 
-    val dataStore = DataStore(context)
-    val isStepSoundEnabled by dataStore.getStepChangeSoundSetting()
+    val dataStore = remember(context) { DataStore(context) }
+    val isStepSoundEnabled by remember(dataStore) { dataStore.getStepChangeSoundSetting() }
         .collectAsState(STEP_SOUND_DEFAULT_VALUE)
-    val isStepVibrationEnabled by dataStore.getStepChangeVibrationSetting()
+    val isStepVibrationEnabled by remember(dataStore) { dataStore.getStepChangeVibrationSetting() }
         .collectAsState(STEP_VIBRATION_DEFAULT_VALUE)
-    val isPiPEnabled by dataStore.getPiPSetting().collectAsState(PIP_DEFAULT_VALUE)
-    val isBackgroundTimerEnabled by dataStore.getBackgroundTimerSetting().collectAsState(false)
-    val isNextStepEnabled by dataStore.getNextStepSetting().collectAsState(
-        NEXT_STEP_ENABLED_DEFAULT_VALUE,
-    )
-    val combineWeightState by dataStore.getWeightSetting()
+    val isPiPEnabled by remember(dataStore) { dataStore.getPiPSetting() }
+        .collectAsState(PIP_DEFAULT_VALUE)
+    val isBackgroundTimerEnabled by remember(dataStore) { dataStore.getBackgroundTimerSetting() }
+        .collectAsState(false)
+    val isNextStepEnabled by remember(dataStore) { dataStore.getNextStepSetting() }
+        .collectAsState(NEXT_STEP_ENABLED_DEFAULT_VALUE)
+    val combineWeightState by remember(dataStore) { dataStore.getWeightSetting() }
         .collectAsState(COMBINE_WEIGHT_DEFAULT_VALUE)
     var showCombineWeightDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val appBarBehavior = createAppBarBehavior()
 
-    val hasPiPPermission = checkPiPPermission(context)
+    var hasPiPPermission by remember { mutableStateOf(checkPiPPermission(context)) }
+    // The user can grant PiP in system settings and come back to this screen.
+    LifecycleResumeEffect(context) {
+        hasPiPPermission = checkPiPPermission(context)
+        onPauseOrDispose { }
+    }
     val toggleBackgroundTimer: () -> Unit = {
         context.askForNotificationPermission()
         coroutineScope.launch { dataStore.toggleBackgroundTimerEnabled() }
@@ -90,7 +97,7 @@ fun TimerSettings(goBack: () -> Unit) {
                     IconButton(onClick = goBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(id = R.string.button_back),
                         )
                     }
                 },

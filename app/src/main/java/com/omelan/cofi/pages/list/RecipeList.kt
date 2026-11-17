@@ -67,8 +67,10 @@ fun RecipeList(
 ) {
     val size = LocalWindowInfo.current.containerSize
     val width = with(LocalDensity.current) { size.width.toDp() }
-    val recipes by recipeViewModel.getAllRecipes().observeAsState(initial = emptyList())
-    val steps by stepsViewModel.getAllSteps().observeAsState(initial = emptyList())
+    val recipes by remember(recipeViewModel) { recipeViewModel.getAllRecipes() }
+        .observeAsState(initial = emptyList())
+    val steps by remember(stepsViewModel) { stepsViewModel.getAllSteps() }
+        .observeAsState(initial = emptyList())
     val stepsByRecipe = steps.groupBy { it.recipeId }
     val scrollBehavior = createAppBarBehavior()
     val isMultiColumn by remember(width) {
@@ -86,7 +88,10 @@ fun RecipeList(
             PiPAwareAppBar(
                 actions = {
                     IconButton(onClick = goToSettings) {
-                        Icon(Icons.Rounded.Settings, contentDescription = null)
+                        Icon(
+                            Icons.Rounded.Settings,
+                            contentDescription = stringResource(R.string.settings_title),
+                        )
                     }
                 },
                 scrollBehavior = scrollBehavior,

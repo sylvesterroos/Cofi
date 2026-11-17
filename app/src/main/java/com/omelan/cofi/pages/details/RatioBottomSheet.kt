@@ -2,6 +2,7 @@
 
 package com.omelan.cofi.pages.details
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -37,6 +39,7 @@ import com.omelan.cofi.share.utils.toStringShort
 import com.omelan.cofi.share.utils.toStringShortWithDecimals
 import com.omelan.cofi.ui.Spacing
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable
@@ -88,9 +91,10 @@ private fun ColumnScope.ManualContent(
         changeTimeMultiplier,
     ) = multiplierControllers
 
-    val dataStore = DataStore(LocalContext.current)
+    val context = LocalContext.current
+    val dataStore = remember(context) { DataStore(context) }
     val coroutineScope = rememberCoroutineScope()
-    val customMultiplier by dataStore.getCustomMultipliers()
+    val customMultiplier by remember(dataStore) { dataStore.getCustomMultipliers() }
         .collectAsState(initial = CUSTOM_MULTIPLIER_DEFAULT_VALUE)
     val combinedWaterWeight by remember(allSteps) {
         derivedStateOf {
@@ -116,56 +120,36 @@ private fun ColumnScope.ManualContent(
     }
     Title(stringResource(id = R.string.recipe_details_multiply_weight))
     Spacer(modifier = Modifier.height(Spacing.normal))
-    Subtitle(
-        text = stringResource(
-            id = R.string.recipe_details_recipeRatio,
-            (combinedWaterWeight / combinedCoffeeWeight).toStringShort(),
-        ),
-    )
+    if (combinedCoffeeWeight > 0f) {
+        Subtitle(
+            text = stringResource(
+                id = R.string.recipe_details_recipeRatio,
+                (combinedWaterWeight / combinedCoffeeWeight).toStringShort(),
+            ),
+        )
+    }
 
     Row(
         modifier = Modifier.padding(top = Spacing.normal),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.normal),
     ) {
-        OutlinedNumbersField(
+        WeightField(
             modifier = Modifier
                 .weight(1f, true)
                 .focusRequester(focusRequester),
-            value = (combinedCoffeeWeight * weightMultiplier).toStringShortWithDecimals(),
-            onValueChange = {
-                val newWeightMultiplier =
-                    ((it.toFloatOrNull() ?: combinedCoffeeWeight) / combinedCoffeeWeight)
-                changeWeightMultiplier(if (newWeightMultiplier.isNaN()) 0f else newWeightMultiplier)
-            },
-            suffix = {
-                Text(text = "g")
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.recipe_icon_coffee_grinder),
-                    contentDescription = null,
-                )
-            },
+            combinedWeight = combinedCoffeeWeight,
+            weightMultiplier = weightMultiplier,
+            changeWeightMultiplier = changeWeightMultiplier,
+            icon = R.drawable.recipe_icon_coffee_grinder,
         )
         Text(text = ":")
-        OutlinedNumbersField(
+        WeightField(
             modifier = Modifier.weight(1f, true),
-            value = (combinedWaterWeight * weightMultiplier).toStringShortWithDecimals(),
-            onValueChange = {
-                val newWeightMultiplier =
-                    ((it.toFloatOrNull() ?: combinedWaterWeight) / combinedWaterWeight)
-                changeWeightMultiplier(if (newWeightMultiplier.isNaN()) 0f else newWeightMultiplier)
-            },
-            suffix = {
-                Text(text = "g")
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_water),
-                    contentDescription = null,
-                )
-            },
+            combinedWeight = combinedWaterWeight,
+            weightMultiplier = weightMultiplier,
+            changeWeightMultiplier = changeWeightMultiplier,
+            icon = R.drawable.ic_water,
         )
     }
     Row(
@@ -193,7 +177,6 @@ private fun ColumnScope.ManualContent(
                             }
                         },
                         modifier = Modifier
-                            .weight(1f)
                             .animateContentSize()
                             .semantics { role = Role.RadioButton },
                         shapes =
@@ -229,7 +212,7 @@ private fun ColumnScope.ManualContent(
             ),
             modifier = Modifier
                 .animateContentSize()
-                .semantics { role = Role.RadioButton },
+                .semantics { role = Role.Button },
             shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
         ) {
             AnimatedContent(customMultiplier.none { it.toFloat() == weightMultiplier }) {
@@ -244,7 +227,7 @@ private fun ColumnScope.ManualContent(
                 } else {
                     Icon(
                         painter = painterResource(R.drawable.ic_delete),
-                        contentDescription = null,
+                        contentDescription = stringResource(id = R.string.step_add_remove),
                     )
                 }
             }
@@ -252,6 +235,49 @@ private fun ColumnScope.ManualContent(
     }
     Title(stringResource(id = R.string.recipe_details_multiply_time))
     SliderWithValue(timeMultiplier, changeTimeMultiplier)
+}
+
+@Composable
+private fun WeightField(
+    combinedWeight: Float,
+    weightMultiplier: Float,
+    changeWeightMultiplier: (Float) -> Unit,
+    @DrawableRes icon: Int,
+    modifier: Modifier = Modifier,
+) {
+    val shownValue = (combinedWeight * weightMultiplier).toStringShortWithDecimals()
+    var text by remember { mutableStateOf(shownValue) }
+    // Keeps what the user is typing (e.g. an empty field) until the multiplier is changed elsewhere.
+    LaunchedEffect(combinedWeight, weightMultiplier) {
+        val typed = text.toFloatOrNull()
+        if (typed == null || combinedWeight <= 0f ||
+            abs(typed / combinedWeight - weightMultiplier) > 1e-4f
+        ) {
+            text = shownValue
+        }
+    }
+    val isEditable = combinedWeight > 0f
+    OutlinedNumbersField(
+        modifier = modifier.focusProperties { canFocus = isEditable },
+        value = text,
+        onValueChange = { newText ->
+            if (!isEditable) return@OutlinedNumbersField
+            text = newText
+            val newMultiplier = newText.toFloatOrNull()?.div(combinedWeight)
+            if (newMultiplier != null && newMultiplier.isFinite()) {
+                changeWeightMultiplier(newMultiplier)
+            }
+        },
+        suffix = {
+            Text(text = "g")
+        },
+        leadingIcon = {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = null,
+            )
+        },
+    )
 }
 
 @Composable
@@ -275,9 +301,9 @@ fun Subtitle(text: String) {
     )
 }
 
-const val step = 0.1f
-val range = 0f..3f
-val steps = (range.endInclusive / step).roundToInt() + 1
+private const val step = 0.1f
+private val range = 0f..3f
+private val steps = (range.endInclusive / step).roundToInt() + 1
 
 @Composable
 private fun SliderWithValue(value: Float, setValue: (Float) -> Unit) {
@@ -287,7 +313,7 @@ private fun SliderWithValue(value: Float, setValue: (Float) -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         val sliderState = rememberSliderState(value = value, steps = steps, trackRange = range)
-        sliderState.value = value
+        LaunchedEffect(value) { sliderState.value = value }
         Slider(
             state = sliderState,
             onValueChange = { setValue(it.roundToDecimals()) },

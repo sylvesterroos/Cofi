@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -41,8 +41,8 @@ private data class CoffeeWaterTime(
     fun addTime(time: Int?): CoffeeWaterTime = this.copy(duration = duration + (time ?: 0))
 }
 
-val enter = scaleIn(initialScale = 0.5f) + fadeIn()
-val exit = scaleOut() + fadeOut()
+private val enter = scaleIn(initialScale = 0.5f) + fadeIn()
+private val exit = scaleOut() + fadeOut()
 
 @Composable
 fun RecipeInfo(
@@ -52,14 +52,12 @@ fun RecipeInfo(
     weightMultiplier: Float = 1f,
     timeMultiplier: Float = 1f,
 ) {
-    val stepInfo by remember(steps) {
-        derivedStateOf {
-            steps.fold(CoffeeWaterTime()) { acc, step ->
-                return@fold when (step.type) {
-                    StepType.ADD_COFFEE -> acc.addCoffee(step.value, step.time)
-                    StepType.WATER -> acc.addWater(step.value, step.time)
-                    else -> acc.addTime(step.time)
-                }
+    val stepInfo = remember(steps) {
+        steps.fold(CoffeeWaterTime()) { acc, step ->
+            when (step.type) {
+                StepType.ADD_COFFEE -> acc.addCoffee(step.value, step.time)
+                StepType.WATER -> acc.addWater(step.value, step.time)
+                else -> acc.addTime(step.time)
             }
         }
     }
@@ -67,9 +65,8 @@ fun RecipeInfo(
     var isSmall by remember { mutableStateOf(false) }
     Box(
         modifier = modifier
-            .onGloballyPositioned { coordinates ->
-                val width = with(localDensity) { coordinates.size.width.toDp() }
-                isSmall = width < 225.0.dp
+            .onSizeChanged { size ->
+                isSmall = with(localDensity) { size.width.toDp() } < 225.dp
             }
             .testTag("recipe_info_box"),
         contentAlignment = Alignment.Center,
@@ -141,7 +138,7 @@ fun Param(modifier: Modifier = Modifier, icon: Painter, text: String, compactSty
         Icon(
             modifier = Modifier.size(if (compactStyle) 20.dp else 30.dp),
             painter = icon,
-            contentDescription = "",
+            contentDescription = null,
         )
         Spacer(modifier = Modifier.size(Spacing.normal))
         Text(

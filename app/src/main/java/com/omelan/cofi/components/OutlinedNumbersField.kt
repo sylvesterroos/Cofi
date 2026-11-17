@@ -54,7 +54,7 @@ fun OutlinedNumbersField(
             }
 
             // --- Float Handling ---
-            var newText = newValue
+            var newText = newValue.replace(',', '.')
             val originalHadDecimal = value.contains('.')
             val newHasNoDecimal = !newText.contains('.')
             if (originalHadDecimal && newHasNoDecimal) {
@@ -80,13 +80,8 @@ fun OutlinedNumbersField(
                 return@OutlinedTextField
             }
 
-            // Ensure only one decimal point
-            // TODO: Move to TextFieldValue transformation and determine where new "." is
             if (newText.count { it == '.' } > 1) {
-                if (newText.count { it == '.' } > value.count { it == '.' }) {
-                    onValueChange(newText.replaceFirst(".", ""))
-                    return@OutlinedTextField
-                }
+                return@OutlinedTextField
             }
 
             // Limit decimal places
@@ -124,7 +119,7 @@ fun OutlinedNumbersField(
             onValueChange(newText)
         },
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Decimal,
+            keyboardType = if (allowFloat) KeyboardType.Decimal else KeyboardType.Number,
             imeAction = imeAction,
         ),
         keyboardActions = keyboardActions,

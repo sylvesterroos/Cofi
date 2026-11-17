@@ -22,7 +22,7 @@ fun linkSpanStyle(color: Color) = TextLinkStyles(
 private fun extractUrls(text: String): List<String> {
     val containedUrls: MutableList<String> = arrayListOf()
     val urlRegex =
-        "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?+-=\\\\.&]*)"
+        "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?+=\\\\.&-]*)"
     val pattern: Pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE)
     val urlMatcher: Matcher = pattern.matcher(text)
     while (urlMatcher.find()) {
@@ -47,7 +47,7 @@ fun buildAnnotatedStringWithUrls(baseText: String, color: Color) = buildAnnotate
     var lastPosition = 0
     urlsInDescription.forEach {
         val positionOfUrl = baseText.indexOf(it, startIndex = lastPosition)
-        lastPosition = positionOfUrl
+        lastPosition = positionOfUrl + it.length
         addLink(
             LinkAnnotation.Url(
                 it,

@@ -1,6 +1,5 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3WindowSizeClassApi::class,
     ExperimentalFoundationApi::class,
     ExperimentalLayoutApi::class,
 )
@@ -20,9 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -35,7 +31,6 @@ import androidx.compose.ui.focus.FocusRequester.Companion.FocusRequesterFactory.
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
@@ -49,7 +44,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -58,9 +52,11 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.room.withTransaction
 import com.omelan.cofi.LocalPiPState
 import com.omelan.cofi.R
 import com.omelan.cofi.components.*
+import com.omelan.cofi.pages.details.rememberIsPhoneLayout
 import com.omelan.cofi.share.model.*
 import com.omelan.cofi.share.pages.Destinations
 import com.omelan.cofi.ui.CofiTheme
@@ -82,10 +78,12 @@ fun NavGraphBuilder.addRecipe(
         RecipeEdit(
             saveRecipe = { recipe, steps ->
                 coroutineScope.launch {
-                    val idOfRecipe = db.recipeDao().insertRecipe(recipe)
-                    db.stepDao().insertAll(steps.map { it.copy(recipeId = idOfRecipe.toInt()) })
+                    db.withTransaction {
+                        val idOfRecipe = db.recipeDao().insertRecipe(recipe)
+                        db.stepDao().insertAll(steps.map { it.copy(recipeId = idOfRecipe.toInt()) })
+                    }
+                    goBack()
                 }
-                goBack()
             },
             goBack = goBack,
         )
@@ -109,8 +107,8 @@ fun NavGraphBuilder.recipeEdit(
         val context = LocalContext.current
         val recipeViewModel: RecipeViewModel = viewModel()
         val stepsViewModel: StepsViewModel = viewModel()
-        val recipe by recipeViewModel.getRecipe(recipeId)
-            .observeAsState(Recipe(name = "", description = ""))
+        val observedRecipe by recipeViewModel.getRecipe(recipeId).observeAsState()
+        val recipe = observedRecipe ?: Recipe(name = "", description = "")
         val steps by stepsViewModel.getAllStepsForRecipe(recipeId)
             .observeAsState(listOf())
         RecipeEdit(
@@ -120,32 +118,36 @@ fun NavGraphBuilder.recipeEdit(
             stepsToEdit = steps,
             saveRecipe = { newRecipe, newSteps ->
                 coroutineScope.launch {
-                    db.recipeDao().updateRecipe(newRecipe)
-                    db.stepDao().deleteAllStepsForRecipe(newRecipe.id)
-                    db.stepDao().insertAll(newSteps)
+                    db.withTransaction {
+                        db.recipeDao().updateRecipe(newRecipe)
+                        db.stepDao().deleteAllStepsForRecipe(newRecipe.id)
+                        db.stepDao().insertAll(newSteps)
+                    }
+                    goBack()
                 }
-                goBack()
             },
             cloneRecipe = { newRecipe, newSteps ->
                 coroutineScope.launch {
-                    val idOfRecipe = db.recipeDao().insertRecipe(
-                        newRecipe.copy(
-                            id = 0,
-                            name = context.resources.getString(
-                                R.string.recipe_clone_suffix,
-                                recipe.name,
+                    db.withTransaction {
+                        val idOfRecipe = db.recipeDao().insertRecipe(
+                            newRecipe.copy(
+                                id = 0,
+                                name = context.resources.getString(
+                                    R.string.recipe_clone_suffix,
+                                    newRecipe.name,
+                                ),
                             ),
-                        ),
-                    )
-                    db.stepDao().insertAll(
-                        newSteps.map {
-                            it.copy(recipeId = idOfRecipe.toInt(), id = 0)
-                        },
-                    )
-                }
-                navController.navigate("list") {
-                    this.popUpTo("list") {
-                        inclusive = true
+                        )
+                        db.stepDao().insertAll(
+                            newSteps.map {
+                                it.copy(recipeId = idOfRecipe.toInt(), id = 0)
+                            },
+                        )
+                    }
+                    navController.navigate(Destinations.RECIPE_LIST) {
+                        this.popUpTo(Destinations.RECIPE_LIST) {
+                            inclusive = true
+                        }
                     }
                 }
             },
@@ -155,8 +157,8 @@ fun NavGraphBuilder.recipeEdit(
                     db.stepDao().deleteAllStepsForRecipe(recipeId = recipeId)
                 }
                 ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(recipeId.toString()))
-                navController.navigate("list") {
-                    this.popUpTo("list") {
+                navController.navigate(Destinations.RECIPE_LIST) {
+                    this.popUpTo(Destinations.RECIPE_LIST) {
                         inclusive = true
                     }
                 }
@@ -164,6 +166,8 @@ fun NavGraphBuilder.recipeEdit(
         )
     }
 }
+
+private data class DraftStep(val key: Long, val step: Step)
 
 @Composable
 fun RecipeEdit(
@@ -174,12 +178,8 @@ fun RecipeEdit(
     deleteRecipe: () -> Unit = {},
     cloneRecipe: (Recipe, List<Step>) -> Unit = { _, _ -> },
     isEditing: Boolean = false,
-    windowSizeClass: WindowSizeClass = WindowSizeClass.calculateFromSize(
-        DpSize(1920.dp, 1080.dp),
-    ),
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val configuration = LocalConfiguration.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val (appBarBehavior, collapse) = createAppBarBehaviorWithCollapse()
     val lazyListState = rememberLazyListState()
@@ -211,28 +211,24 @@ fun RecipeEdit(
         )
     }
 
-    var steps by remember(stepsToEdit) { mutableStateOf(stepsToEdit) }
-    var stepWithOpenEditor by remember { mutableStateOf<Step?>(null) }
+    var draftSteps by remember(stepsToEdit) {
+        mutableStateOf(stepsToEdit.mapIndexed { index, step -> DraftStep(index.toLong(), step) })
+    }
+    var nextDraftKey by remember(stepsToEdit) { mutableLongStateOf(stepsToEdit.size.toLong()) }
+    var openEditorKey by remember { mutableStateOf<Long?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
+    val steps = draftSteps.map { it.step }
 
-    val canSave by remember(name.text, steps) {
+    val canSave by remember(name.text, draftSteps) {
         derivedStateOf {
-            name.text.isNotBlank() && steps.isNotEmpty()
+            name.text.isNotBlank() && draftSteps.isNotEmpty()
         }
     }
 
-    val isPhoneLayout by remember(
-        windowSizeClass.widthSizeClass,
-        configuration.screenHeightDp,
-        configuration.screenWidthDp,
-    ) {
-        derivedStateOf {
-            windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||
-                (configuration.screenHeightDp > configuration.screenWidthDp)
-        }
-    }
+    val isPhoneLayout = rememberIsPhoneLayout()
 
     val canSafelyExit = !(
-        steps !== stepsToEdit ||
+        steps != stepsToEdit ||
             name.text != recipeToEdit.name ||
             description.text != recipeToEdit.description ||
             pickedIcon != recipeToEdit.recipeIcon
@@ -246,23 +242,26 @@ fun RecipeEdit(
         }
     }
 
-    BackHandler(stepWithOpenEditor != null || !canSafelyExit) {
-        if (stepWithOpenEditor != null) {
-            stepWithOpenEditor = null
+    BackHandler(openEditorKey != null || !canSafelyExit) {
+        if (openEditorKey != null) {
+            openEditorKey = null
         } else {
             safeGoBack()
         }
     }
 
     val onSave: () -> Unit = {
-        saveRecipe(
-            recipeToEdit.copy(
-                name = name.text,
-                description = description.text,
-                recipeIcon = pickedIcon,
-            ),
-            steps.mapIndexed { index, step -> step.copy(orderInRecipe = index) },
-        )
+        if (!isSaving) {
+            isSaving = true
+            saveRecipe(
+                recipeToEdit.copy(
+                    name = name.text,
+                    description = description.text,
+                    recipeIcon = pickedIcon,
+                ),
+                steps.mapIndexed { index, step -> step.copy(orderInRecipe = index) },
+            )
+        }
     }
 
     val renderNameAndDescriptionEdit: LazyListScope.() -> Unit = {
@@ -284,7 +283,7 @@ fun RecipeEdit(
                 ) {
                     Icon(
                         painter = painterResource(id = pickedIcon.icon),
-                        contentDescription = null,
+                        contentDescription = stringResource(id = pickedIcon.nameResId),
                     )
                 }
                 var nameHasFocus by remember { mutableStateOf(true) }
@@ -357,35 +356,31 @@ fun RecipeEdit(
 
     val renderSteps: LazyListScope.() -> Unit = {
         itemsIndexed(
-            steps,
-            { _, step -> if (step.id == 0) step.hashCode() else step.id },
-        ) { index, step ->
+            draftSteps,
+            { _, draft -> draft.key },
+        ) { index, draft ->
             AnimatedVisibility(
-                visible = stepWithOpenEditor == step,
+                visible = openEditorKey == draft.key,
                 enter = expandVertically(),
                 exit = shrinkVertically(),
                 modifier = Modifier.animateItem(),
             ) {
                 StepAddCard(
-                    stepToEdit = step,
+                    stepToEdit = draft.step,
                     save = { stepToSave ->
-                        steps = if (stepToSave == null) {
-                            steps.minus(step)
+                        draftSteps = if (stepToSave == null) {
+                            draftSteps.filter { it.key != draft.key }
                         } else {
-                            steps.mapIndexed { mapIndex, step ->
-                                if (index == mapIndex) {
-                                    stepToSave
-                                } else {
-                                    step
-                                }
+                            draftSteps.map {
+                                if (it.key == draft.key) it.copy(step = stepToSave) else it
                             }
                         }
-                        stepWithOpenEditor = null
+                        openEditorKey = null
                     },
                     isFirst = index == 0,
-                    isLast = index == steps.size - 1,
+                    isLast = index == draftSteps.size - 1,
                     onPositionChange = { change ->
-                        steps = steps.toMutableList().apply {
+                        draftSteps = draftSteps.toMutableList().apply {
                             add(index + change, removeAt(index))
                         }
                     },
@@ -394,29 +389,29 @@ fun RecipeEdit(
                 )
             }
             AnimatedVisibility(
-                visible = stepWithOpenEditor != step,
+                visible = openEditorKey != draft.key,
                 enter = expandVertically(),
                 exit = shrinkVertically(),
             ) {
                 StepListItem(
                     shape = when {
-                        steps.size <= 1 -> ItemShape.Only
+                        draftSteps.size <= 1 -> ItemShape.Only
                         index == 0 -> ItemShape.First
-                        index == steps.lastIndex -> ItemShape.Last
+                        index == draftSteps.lastIndex -> ItemShape.Last
                         else -> ItemShape.Middle
                     },
-                    step = step,
+                    step = draft.step,
                     stepProgress = StepProgress.Upcoming,
                     onClick = {
                         collapse()
-                        stepWithOpenEditor = it
+                        openEditorKey = draft.key
                     },
                 )
             }
         }
         item {
             AnimatedVisibility(
-                visible = stepWithOpenEditor == null,
+                visible = openEditorKey == null,
                 enter = expandVertically(),
                 exit = shrinkVertically(),
                 modifier = Modifier
@@ -431,10 +426,10 @@ fun RecipeEdit(
                     },
                     save = { stepToSave ->
                         if (stepToSave != null) {
-                            steps = steps.toMutableList().apply { add(stepToSave) }
+                            draftSteps = draftSteps + DraftStep(nextDraftKey++, stepToSave)
                         }
                     },
-                    orderInRecipe = steps.size,
+                    orderInRecipe = draftSteps.size,
                     recipeId = recipeToEdit.id,
                 )
             }
@@ -446,7 +441,10 @@ fun RecipeEdit(
             PiPAwareAppBar(
                 navigationIcon = {
                     IconButton(onClick = safeGoBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = stringResource(id = R.string.button_back),
+                        )
                     }
                 },
                 actions = {
@@ -454,13 +452,13 @@ fun RecipeEdit(
                         IconButton(onClick = { isCloneModalVisible = true }) {
                             Icon(
                                 painterResource(id = R.drawable.ic_copy),
-                                contentDescription = null,
+                                contentDescription = stringResource(id = R.string.button_copy),
                             )
                         }
                         IconButton(onClick = { isDeleteModalVisible = true }) {
                             Icon(
                                 painterResource(id = R.drawable.ic_delete),
-                                contentDescription = null,
+                                contentDescription = stringResource(id = R.string.button_delete),
                             )
                         }
                     }
@@ -471,7 +469,7 @@ fun RecipeEdit(
                     ) {
                         Icon(
                             painterResource(id = R.drawable.ic_save),
-                            contentDescription = null,
+                            contentDescription = stringResource(id = R.string.step_add_save),
                         )
                     }
                 },
@@ -523,6 +521,7 @@ fun RecipeEdit(
     if (isCloneModalVisible) {
         CloneDialog(
             onConfirm = {
+                isCloneModalVisible = false
                 cloneRecipe(
                     recipeToEdit.copy(
                         name = name.text,
@@ -594,7 +593,7 @@ private fun IconPickerBottomSheet(setPickedIcon: (RecipeIcon) -> Unit, onDismiss
                             Icon(
                                 painter = painterResource(id = it.icon),
                                 tint = MaterialTheme.colorScheme.onSurface,
-                                contentDescription = it.name,
+                                contentDescription = stringResource(id = it.nameResId),
                                 modifier = Modifier.size(36.dp),
                             )
                         }

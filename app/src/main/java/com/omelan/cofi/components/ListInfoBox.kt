@@ -39,7 +39,7 @@ fun RecipeListInfoBox(
         enableDismissFromEndToStart = false,
     ) {
         ListItemBackground(
-            modifier.padding(bottom = Spacing.small),
+            Modifier.padding(bottom = Spacing.small),
             contentPadding = PaddingValues(start = Spacing.big, bottom = Spacing.big),
             shape = ItemShape.Only,
             onClick = onClick,
@@ -55,7 +55,9 @@ fun RecipeListInfoBox(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         Icons.Rounded.Close,
-                        contentDescription = "",
+                        contentDescription = stringResource(
+                            id = com.omelan.cofi.R.string.infoBox_dismiss,
+                        ),
                         tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }

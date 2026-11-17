@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.example.compose.*
 import com.omelan.cofi.model.DYNAMIC_THEME_DEFAULT_VALUE
@@ -103,10 +104,9 @@ fun getMaterialYouPallets(context: Context, darkMode: Boolean) =
 @Composable
 fun CofiTheme(isDarkMode: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val dataStore = DataStore(context)
-    val dynamicThemeEnabled by dataStore.getDynamicThemeSetting().collectAsState(
-        DYNAMIC_THEME_DEFAULT_VALUE,
-    )
+    val dynamicThemeEnabled by remember(context) {
+        DataStore(context).getDynamicThemeSetting()
+    }.collectAsState(DYNAMIC_THEME_DEFAULT_VALUE)
     val colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && dynamicThemeEnabled) {
         getMaterialYouPallets(context, isDarkMode)
     } else {

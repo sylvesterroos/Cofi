@@ -8,12 +8,11 @@ import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -98,20 +97,23 @@ fun InsetAwareTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     elevation: Dp = 4.dp,
 ) {
-    val scrollFraction = scrollBehavior?.state?.collapsedFraction ?: 0f
-    val appBarContainerColor by rememberUpdatedState(
-        lerp(
-            MaterialTheme.colorScheme.surface,
-            MaterialTheme.colorScheme.surfaceContainer,
-            FastOutLinearInEasing.transform(scrollFraction),
-        ),
-    )
+    val expandedColor = MaterialTheme.colorScheme.surface
+    val collapsedColor = MaterialTheme.colorScheme.surfaceContainer
+    // Read in graphicsLayer/draw lambdas so scrolling only redraws instead of recomposing.
+    val scrollFraction = { scrollBehavior?.state?.collapsedFraction ?: 0f }
     Surface(
         color = Color.Transparent,
-        shadowElevation = elevation * scrollFraction,
-        modifier = modifier.drawBehind {
-            drawRect(appBarContainerColor)
-        },
+        modifier = modifier
+            .graphicsLayer { shadowElevation = elevation.toPx() * scrollFraction() }
+            .drawBehind {
+                drawRect(
+                    lerp(
+                        expandedColor,
+                        collapsedColor,
+                        FastOutLinearInEasing.transform(scrollFraction()),
+                    ),
+                )
+            },
     ) {
         LargeFlexibleTopAppBar(
             title = title,

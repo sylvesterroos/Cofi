@@ -2,6 +2,7 @@ package com.omelan.cofi.pages.list
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.material3.Icon
@@ -26,11 +27,12 @@ import kotlinx.coroutines.launch
 fun createRecipeListHeaderInfo(animateToTop: suspend () -> Unit): (LazyGridScope.() -> Unit) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val dataStore = DataStore(context)
-    val dismissedBoxes by dataStore.getDismissedInfoBoxes().collectAsState(initial = null)
-    val lastSeenUpdateBoxVersion by dataStore.getLastSeenUpdateNoticeVersion().collectAsState(
-        initial = Int.MAX_VALUE,
-    )
+    val dataStore = remember(context) { DataStore(context) }
+    val dismissedBoxes by remember(dataStore) { dataStore.getDismissedInfoBoxes() }
+        .collectAsState(initial = null)
+    val lastSeenUpdateBoxVersion by remember(dataStore) {
+        dataStore.getLastSeenUpdateNoticeVersion()
+    }.collectAsState(initial = Int.MAX_VALUE)
     var wearNodesWithoutApp by remember {
         mutableStateOf(listOf<String>())
     }
@@ -58,7 +60,7 @@ fun createRecipeListHeaderInfo(animateToTop: suspend () -> Unit): (LazyGridScope
     return when {
         showUpdateNotice -> {
             {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     NewUpdateNotice(
                         onDismiss = {
                             coroutineScope.launch {
@@ -72,7 +74,7 @@ fun createRecipeListHeaderInfo(animateToTop: suspend () -> Unit): (LazyGridScope
 
         showWearOSNotice -> {
             {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     WatchOsNotice(
                         wearNodesWithoutApp = wearNodesWithoutApp,
                         onDismiss = {

@@ -2,7 +2,7 @@
 
 package com.omelan.cofi.pages.settings
 
-import android.icu.text.DateFormat
+import android.database.sqlite.SQLiteException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
@@ -27,21 +27,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.room.withTransaction
 import com.omelan.cofi.R
 import com.omelan.cofi.components.Material3Dialog
 import com.omelan.cofi.components.PiPAwareAppBar
 import com.omelan.cofi.components.createAppBarBehavior
 import com.omelan.cofi.share.model.*
 import com.omelan.cofi.utils.getDefaultPadding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONException
+import java.io.IOException
 import java.nio.charset.StandardCharsets
-import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
-fun BackupRestoreSettings(goBack: () -> Unit, goToRoot: () -> Unit) {
+fun BackupRestoreSettings(goBack: () -> Unit, goToRecipeList: () -> Unit) {
     val context = LocalContext.current
     val snackbarState = remember { SnackbarHostState() }
     var showDefaultRecipeDialog by remember { mutableStateOf(false) }
@@ -62,7 +68,7 @@ fun BackupRestoreSettings(goBack: () -> Unit, goToRoot: () -> Unit) {
                     IconButton(onClick = goBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(id = R.string.button_back),
                         )
                     }
                 },
@@ -77,7 +83,7 @@ fun BackupRestoreSettings(goBack: () -> Unit, goToRoot: () -> Unit) {
                 Snackbar(
                     action = {
                         it.visuals.actionLabel?.let { label ->
-                            TextButton(onClick = goToRoot) {
+                            TextButton(onClick = goToRecipeList) {
                                 Text(text = label)
                             }
                         }
@@ -158,6 +164,13 @@ fun BackupRestoreSettings(goBack: () -> Unit, goToRoot: () -> Unit) {
                             )
                         }
                     },
+                    onRestoreError = {
+                        coroutineScope.launch {
+                            snackbarState.showSnackbar(
+                                context.resources.getString(R.string.settings_restore_error),
+                            )
+                        }
+                    },
                 )
             }
         }
@@ -165,30 +178,49 @@ fun BackupRestoreSettings(goBack: () -> Unit, goToRoot: () -> Unit) {
 }
 
 @Composable
-fun RestoreListItem(afterRestore: (numberOfRestored: Int) -> Unit) {
+fun RestoreListItem(afterRestore: (numberOfRestored: Int) -> Unit, onRestoreError: () -> Unit) {
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
     val coroutineScope = rememberCoroutineScope()
 
     val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-            if (it == null) {
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri == null) {
                 return@rememberLauncherForActivityResult
             }
-            val contentResolver = context.contentResolver
-            contentResolver.openInputStream(it).use { inputStream ->
-                if (inputStream == null) return@rememberLauncherForActivityResult
-                val jsonString = String(inputStream.readBytes(), StandardCharsets.UTF_8)
-                val jsonArray = JSONArray(jsonString)
-                coroutineScope.launch {
-                    for (i in 0 until jsonArray.length()) {
-                        val jsonObject = jsonArray.getJSONObject(i)
-                        val recipe = jsonObject.toRecipe()
-                        val recipeId = db.recipeDao().insertRecipe(recipe)
-                        val steps = jsonObject.getJSONArray(jsonSteps).toSteps(recipeId = recipeId)
-                        db.stepDao().insertAll(steps)
+            coroutineScope.launch {
+                val numberOfRestored = try {
+                    withContext(Dispatchers.IO) {
+                        val jsonString = context.contentResolver.openInputStream(uri)?.use {
+                            String(it.readBytes(), StandardCharsets.UTF_8)
+                        } ?: throw IOException("Cannot open $uri")
+                        val jsonArray = JSONArray(jsonString)
+                        db.withTransaction {
+                            for (i in 0 until jsonArray.length()) {
+                                val jsonObject = jsonArray.getJSONObject(i)
+                                val recipeId = db.recipeDao().insertRecipe(jsonObject.toRecipe())
+                                db.stepDao().insertAll(
+                                    jsonObject.getJSONArray(jsonSteps).toSteps(recipeId = recipeId),
+                                )
+                            }
+                        }
+                        jsonArray.length()
                     }
-                    afterRestore(jsonArray.length())
+                } catch (_: JSONException) {
+                    null
+                } catch (_: IOException) {
+                    null
+                } catch (_: SecurityException) {
+                    null
+                } catch (_: IllegalArgumentException) {
+                    null
+                } catch (_: SQLiteException) {
+                    null
+                }
+                if (numberOfRestored == null) {
+                    onRestoreError()
+                } else {
+                    afterRestore(numberOfRestored)
                 }
             }
         }
@@ -218,11 +250,8 @@ fun BackupDialog(dismiss: () -> Unit, afterBackup: (numberOfBackups: Int) -> Uni
             recipesToBackup.addAll(recipes)
         }
     }
-    val steps by db.stepDao().getAll().observeAsState(initial = listOf())
-    if (steps.isEmpty()) {
-        return
-    }
-    val stepsWithRecipeId = steps.groupBy { it.recipeId }
+    val steps by db.stepDao().getAll().observeAsState()
+    val stepsWithRecipeId = steps.orEmpty().groupBy { it.recipeId }
     val launcher = rememberLauncherForActivityResult(CreateDocument("application/json")) {
         if (it == null) {
             return@rememberLauncherForActivityResult
@@ -240,18 +269,18 @@ fun BackupDialog(dismiss: () -> Unit, afterBackup: (numberOfBackups: Int) -> Uni
         afterBackup(recipesToBackup.size)
         dismiss()
     }
+    val isNothingToBackUp = steps?.isEmpty() == true
+    LaunchedEffect(isNothingToBackUp) {
+        if (isNothingToBackUp) dismiss()
+    }
+    if (steps.isNullOrEmpty()) {
+        return
+    }
 
     Material3Dialog(
         onDismissRequest = dismiss,
         onSave = {
-            val c = Calendar.getInstance().time
-            val format: DateFormat =
-                DateFormat.getDateTimeInstance(
-                    DateFormat.SHORT,
-                    DateFormat.SHORT,
-                    Locale.getDefault(),
-                )
-            val formattedDate: String = format.format(c)
+            val formattedDate = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.US).format(Date())
             launcher.launch("cofi_backup_$formattedDate.json")
         },
         title = { Text(text = stringResource(id = R.string.settings_backup)) },
@@ -359,5 +388,5 @@ fun DefaultRecipesDialog(dismiss: () -> Unit) {
 @Preview
 @Composable
 fun BackupRestoreSettingsPreview() {
-    BackupRestoreSettings(goBack = {}, goToRoot = {})
+    BackupRestoreSettings(goBack = {}, goToRecipeList = {})
 }

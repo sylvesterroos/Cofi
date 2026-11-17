@@ -59,9 +59,9 @@ fun NavGraphBuilder.settings(
         composable(Destinations.SETTINGS_BACKUP) {
             BackupRestoreSettings(
                 goBack = goBack,
-                goToRoot = {
-                    navController.navigate(Destinations.SETTINGS_LIST) {
-                        popUpTo(Destinations.SETTINGS_LIST) {
+                goToRecipeList = {
+                    navController.navigate(Destinations.RECIPE_LIST) {
+                        popUpTo(Destinations.RECIPE_LIST) {
                             inclusive = true
                         }
                     }

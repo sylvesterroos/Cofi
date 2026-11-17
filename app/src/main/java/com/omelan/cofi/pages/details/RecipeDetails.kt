@@ -30,9 +30,11 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.roundToIntRect
 import androidx.core.content.pm.ShortcutInfoCompat
@@ -58,7 +60,11 @@ import com.omelan.cofi.share.utils.getActivity
 import com.omelan.cofi.share.utils.hasNotificationPermission
 import com.omelan.cofi.ui.Spacing
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Date
 
 fun NavGraphBuilder.recipeDetails(
@@ -83,9 +89,10 @@ fun NavGraphBuilder.recipeDetails(
             ?: throw IllegalStateException("No Recipe ID")
         val isInPiP = LocalPiPState.current
         val context = LocalContext.current
-        val dataStore = DataStore(context)
+        val dataStore = remember(context) { DataStore(context) }
         val coroutineScope = rememberCoroutineScope()
-        val alreadyAskedForSupport by dataStore.getAskedForSupport().collectAsState(initial = true)
+        val alreadyAskedForSupport by remember(dataStore) { dataStore.getAskedForSupport() }
+            .collectAsState(initial = true)
         var hasDoneThisRecipeMoreThanOnce by remember {
             mutableStateOf(false)
         }
@@ -147,9 +154,14 @@ fun RecipeDetails(
     recipeViewModel: RecipeViewModel = viewModel(),
     windowSizeClass: WindowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1920.dp, 1080.dp)),
 ) {
-    val steps by stepsViewModel.getAllStepsForRecipe(recipeId).observeAsState(listOf())
-    val recipe by recipeViewModel.getRecipe(recipeId)
-        .observeAsState(Recipe(name = "", description = ""))
+    val steps by remember(stepsViewModel, recipeId) {
+        stepsViewModel.getAllStepsForRecipe(recipeId)
+    }.observeAsState(listOf())
+    val observedRecipe by remember(recipeViewModel, recipeId) {
+        recipeViewModel.getRecipe(recipeId)
+    }
+        .observeAsState()
+    val recipe = observedRecipe ?: Recipe(name = "", description = "")
     RecipeDetails(
         recipe,
         steps,
@@ -185,12 +197,12 @@ fun RecipeDetails(
 
     val lazyListState = rememberLazyListState()
 
-    val dataStore = DataStore(LocalContext.current)
+    val dataStore = remember(context) { DataStore(context) }
 
-    val isNextStepEnabled by dataStore.getNextStepSetting()
+    val isNextStepEnabled by remember(dataStore) { dataStore.getNextStepSetting() }
         .collectAsState(initial = NEXT_STEP_ENABLED_DEFAULT_VALUE)
 
-    val isBackgroundTimerEnabled by dataStore.getBackgroundTimerSetting()
+    val isBackgroundTimerEnabled by remember(dataStore) { dataStore.getBackgroundTimerSetting() }
         .collectAsState(initial = false)
 
     var showAutomateLinkDialog by remember { mutableStateOf(false) }
@@ -248,8 +260,19 @@ fun RecipeDetails(
         onTimerRunning(isTimerRunning)
     }
 
-    LaunchedEffect(recipe) {
+    LaunchedEffect(recipe.id) {
         lazyListState.animateScrollToItem(0)
+    }
+
+    val timerBounds = remember { MutableStateFlow<IntRect?>(null) }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        LaunchedEffect(isTimerRunning) {
+            timerBounds.filterNotNull().collectLatest { bounds ->
+                withContext(Dispatchers.IO) {
+                    setPiPSettings(context.getActivity(), isTimerRunning, bounds.toAndroidRect())
+                }
+            }
+        }
     }
     DisposableEffect(true) {
         onDispose {
@@ -262,17 +285,19 @@ fun RecipeDetails(
         }
     }
 
+    val isPhoneLayout = rememberIsPhoneLayout(windowSizeClass)
+
     fun startRecipe() = coroutineScope.launch {
         collapse()
-        launch {
-            lazyListState.animateScrollToItem(if (recipe.description.isNotBlank()) 1 else 0)
+        if (isPhoneLayout) {
+            launch {
+                lazyListState.animateScrollToItem(if (recipe.description.isNotBlank()) 1 else 0)
+            }
         }
         launch {
             changeToNextStep(true)
         }
     }
-
-    val isPhoneLayout = rememberIsPhoneLayout(windowSizeClass)
 
     val renderDescription: @Composable ((Modifier) -> Unit)? =
         if (recipe.description.isNotBlank()) {
@@ -290,23 +315,11 @@ fun RecipeDetails(
         }
 
     val renderTimer: @Composable (Modifier) -> Unit = {
-        val activity = LocalContext.current.getActivity()
         Timer(
             modifier = it
                 .testTag("recipe_timer")
                 .onGloballyPositioned { coordinates ->
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        coroutineScope.launch(Dispatchers.IO) {
-                            setPiPSettings(
-                                activity,
-                                isTimerRunning,
-                                coordinates
-                                    .boundsInWindow()
-                                    .roundToIntRect()
-                                    .toAndroidRect(),
-                            )
-                        }
-                    }
+                    timerBounds.value = coordinates.boundsInWindow().roundToIntRect()
                 },
             currentStep = currentStep,
             allSteps = steps,
@@ -414,26 +427,33 @@ fun RecipeDetails(
                 },
                 navigationIcon = {
                     IconButton(onClick = goBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = stringResource(id = R.string.button_back),
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { ratioSheetIsVisible = true }) {
                         Icon(
                             painterResource(id = R.drawable.ic_scale),
-                            contentDescription = null,
+                            contentDescription = stringResource(
+                                id = R.string.recipe_details_multiply_weight,
+                            ),
                         )
                     }
                     IconButton(onClick = { showAutomateLinkDialog = true }) {
                         Icon(
                             painterResource(id = R.drawable.ic_link),
-                            contentDescription = null,
+                            contentDescription = stringResource(
+                                id = R.string.recipe_details_automation_dialog_title,
+                            ),
                         )
                     }
                     IconButton(onClick = goToEdit) {
                         Icon(
                             painterResource(id = R.drawable.ic_edit),
-                            contentDescription = null,
+                            contentDescription = stringResource(id = R.string.recipe_edit_title),
                         )
                     }
                 },
@@ -488,7 +508,15 @@ fun RecipeDetails(
                 lazyListState,
             )
         } else {
-            TabletLayout(it, renderDescription, renderTimer, renderUpNext, renderSteps, isInPiP)
+            TabletLayout(
+                it,
+                renderDescription,
+                renderTimer,
+                renderUpNext,
+                renderSteps,
+                isInPiP,
+                lazyListState,
+            )
         }
     }
     if (showNotificationDialog) {

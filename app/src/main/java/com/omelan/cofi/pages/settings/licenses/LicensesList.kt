@@ -7,6 +7,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -16,8 +18,11 @@ import androidx.compose.ui.unit.dp
 import com.omelan.cofi.R
 import com.omelan.cofi.components.PiPAwareAppBar
 import com.omelan.cofi.components.createAppBarBehavior
+import com.omelan.cofi.share.model.Dependency
 import com.omelan.cofi.share.utils.parseJsonToDependencyList
 import com.omelan.cofi.utils.getDefaultPadding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,9 +30,13 @@ fun LicensesList(goBack: () -> Unit) {
     val context = LocalContext.current
     val appBarBehavior = createAppBarBehavior()
 
-    val dependencyList = context.assets.open("open_source_licenses.json").bufferedReader().use {
-        it.readText()
-    }.parseJsonToDependencyList()
+    val dependencyList by produceState<List<Dependency>>(emptyList()) {
+        value = withContext(Dispatchers.IO) {
+            context.assets.open("open_source_licenses.json").bufferedReader().use {
+                it.readText()
+            }.parseJsonToDependencyList()
+        }
+    }
     Scaffold(
         topBar = {
             PiPAwareAppBar(
@@ -42,7 +51,7 @@ fun LicensesList(goBack: () -> Unit) {
                     IconButton(onClick = goBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(id = R.string.button_back),
                         )
                     }
                 },

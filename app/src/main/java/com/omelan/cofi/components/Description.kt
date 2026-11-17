@@ -15,11 +15,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.omelan.cofi.R
 import com.omelan.cofi.ui.CofiTheme
 import com.omelan.cofi.ui.Spacing
 import com.omelan.cofi.ui.shapes
@@ -34,7 +36,10 @@ fun Description(modifier: Modifier = Modifier, descriptionText: String) {
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
         label = "Icon rotation",
     )
-    val descriptionWithLinks = buildAnnotatedStringWithUrls(descriptionText)
+    val linkColor = MaterialTheme.colorScheme.secondary
+    val descriptionWithLinks = remember(descriptionText, linkColor) {
+        buildAnnotatedStringWithUrls(descriptionText, linkColor)
+    }
 
     Surface(modifier = modifier, shape = shapes.medium, tonalElevation = 2.dp) {
         Column(
@@ -43,7 +48,7 @@ fun Description(modifier: Modifier = Modifier, descriptionText: String) {
                     value = isExpanded,
                     enabled = showExpandButton,
                     onValueChange = { isExpanded = it },
-                    role = Role.Switch,
+                    role = Role.Button,
                 )
                 .run {
                     if (showExpandButton || isExpanded) {
@@ -80,11 +85,17 @@ fun Description(modifier: Modifier = Modifier, descriptionText: String) {
             if (showExpandButton || isExpanded) {
                 Icon(
                     imageVector = Icons.Rounded.KeyboardArrowDown,
-                    contentDescription = "Expand",
+                    contentDescription = stringResource(
+                        if (isExpanded) {
+                            R.string.description_collapse
+                        } else {
+                            R.string.description_expand
+                        },
+                    ),
                     modifier = Modifier
                         .padding(top = Spacing.small)
                         .align(Alignment.CenterHorizontally)
-                        .rotate(rotationDegree),
+                        .graphicsLayer { rotationZ = rotationDegree },
                 )
             }
         }

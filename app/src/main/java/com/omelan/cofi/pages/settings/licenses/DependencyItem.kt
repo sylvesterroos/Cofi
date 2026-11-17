@@ -48,9 +48,7 @@ fun DependencyItem(dependency: Dependency) {
         modifier = Modifier
             .settingsItemModifier(
                 onClick = {
-                    uriHandler.openUri(
-                        dependency.url ?: dependency.licenses.first().license_url,
-                    )
+                    dependency.url?.let(uriHandler::openUri)
                 },
                 enabled = !dependency.url.isNullOrBlank() && dependency.url != "null",
                 unlimitedHeight = true,

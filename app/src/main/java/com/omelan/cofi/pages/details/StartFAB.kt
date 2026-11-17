@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
@@ -61,7 +62,9 @@ fun StartFAB(isTimerRunning: Boolean, onClick: () -> Unit) {
             painter = rememberAnimatedVectorPainter(icon, isTimerRunning),
 //            tint = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.size(FloatingActionButtonDefaults.LargeIconSize),
-            contentDescription = null,
+            contentDescription = stringResource(
+                if (isTimerRunning) R.string.notification_action_pause else R.string.timer_start,
+            ),
         )
     }
 }

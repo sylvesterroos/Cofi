@@ -12,9 +12,6 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -29,17 +26,8 @@ fun rememberIsPhoneLayout(
     windowSizeClass: WindowSizeClass = WindowSizeClass.calculateFromSize(DpSize(1920.dp, 1080.dp)),
 ): Boolean {
     val configuration = LocalConfiguration.current
-    val isPhoneLayout by remember(
-        windowSizeClass.widthSizeClass,
-        configuration.screenHeightDp,
-        configuration.screenWidthDp,
-    ) {
-        derivedStateOf {
-            windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||
-                (configuration.screenHeightDp / configuration.screenWidthDp.toFloat() > 1.3)
-        }
-    }
-    return isPhoneLayout
+    return windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||
+        (configuration.screenHeightDp / configuration.screenWidthDp.toFloat() > 1.3)
 }
 
 @Composable
@@ -50,6 +38,7 @@ fun TabletLayout(
     upNext: LazyListScope.() -> Unit,
     steps: LazyListScope.() -> Unit,
     isInPiP: Boolean,
+    lazyListState: LazyListState,
 ) {
     Row(
         modifier = Modifier
@@ -75,6 +64,7 @@ fun TabletLayout(
             LazyColumn(
                 modifier = Modifier.padding(horizontal = Spacing.normal),
                 contentPadding = PaddingValues(bottom = Spacing.bigFab, top = Spacing.big),
+                state = lazyListState,
             ) {
                 description?.let {
                     item("description") {

@@ -53,7 +53,7 @@ fun StepListItem(
 ) {
     val context = LocalContext.current
     val icon = AnimatedImageVector.animatedVectorResource(R.drawable.step_done_anim)
-    var atEnd by remember { mutableStateOf(false) }
+    var atEnd by remember { mutableStateOf(stepProgress == StepProgress.Done) }
     val painter = when (stepProgress) {
         StepProgress.Current, StepProgress.Done -> rememberAnimatedVectorPainter(icon, atEnd)
         StepProgress.Upcoming -> painterResource(id = step.type.iconRes)

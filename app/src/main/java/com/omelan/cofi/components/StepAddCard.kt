@@ -29,6 +29,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -63,10 +64,11 @@ fun StepAddCard(
 ) {
     var pickedType by remember(stepToEdit) { mutableStateOf(stepToEdit?.type) }
     val pickedTypeName = pickedType?.stringRes?.let { stringResource(id = it) } ?: ""
-    var stepName by remember(stepToEdit, pickedTypeName) {
-        val name = stepToEdit?.name ?: pickedTypeName
+    var stepName by remember(stepToEdit) {
+        val name = stepToEdit?.name ?: ""
         mutableStateOf(TextFieldValue(name, TextRange(name.length)))
     }
+    val context = LocalContext.current
     var stepTime by remember(stepToEdit) {
         if (stepToEdit == null) {
             return@remember mutableStateOf("")
@@ -141,6 +143,11 @@ fun StepAddCard(
                 StepType.entries.forEachIndexed { index, stepType ->
                     ToggleButton(
                         onCheckedChange = {
+                            if (stepName.text.isBlank() || stepName.text == pickedTypeName) {
+                                val defaultName = context.getString(stepType.stringRes)
+                                stepName =
+                                    TextFieldValue(defaultName, TextRange(defaultName.length))
+                            }
                             pickedType = stepType
                         },
                         shapes = when (index) {
@@ -210,7 +217,12 @@ fun StepAddCard(
                     },
                     trailingIcon = {
                         IconButton(onClick = { timeExplainerIsOpen = true }) {
-                            Icon(Icons.Rounded.Info, contentDescription = "")
+                            Icon(
+                                Icons.Rounded.Info,
+                                contentDescription = stringResource(
+                                    id = R.string.step_add_duration_info,
+                                ),
+                            )
                         }
                     },
                     imeAction = when {
@@ -293,6 +305,7 @@ fun StepAddCard(
                     ) {
                         PillButton(
                             painter = rememberVectorPainter(Icons.Rounded.KeyboardArrowUp),
+                            contentDescription = stringResource(id = R.string.step_add_move_up),
                             onClick = {
                                 onPositionChange(-1)
                                 coroutineScope.launch {
@@ -304,6 +317,7 @@ fun StepAddCard(
                         Spacer(modifier = Modifier.width(Spacing.normal))
                         PillButton(
                             painter = rememberVectorPainter(Icons.Rounded.KeyboardArrowDown),
+                            contentDescription = stringResource(id = R.string.step_add_move_down),
                             onClick = {
                                 onPositionChange(1)
                                 coroutineScope.launch {
@@ -353,6 +367,7 @@ fun PillButton(
     text: String? = null,
     enabled: Boolean = true,
     painter: Painter,
+    contentDescription: String? = null,
     onClick: () -> Unit,
 ) {
     if (!text.isNullOrBlank()) {
@@ -373,7 +388,11 @@ fun PillButton(
             enabled = enabled,
             modifier = modifier,
         ) {
-            Icon(painter = painter, contentDescription = null, modifier = Modifier.size(22.dp))
+            Icon(
+                painter = painter,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(22.dp),
+            )
         }
     }
 }
