@@ -6,13 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Parcelable
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.content.IntentCompat
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import kotlinx.parcelize.Parcelize
-
 
 @Parcelize
 data class TimerData(
@@ -27,14 +27,13 @@ private const val ACTION_DATA = "ACTION_DATA"
 
 object TimerActions {
     enum class Actions {
-        ACTION_PAUSE, ACTION_NEXT, ACTION_RESUME, ACTION_STOP
+        ACTION_PAUSE,
+        ACTION_NEXT,
+        ACTION_RESUME,
+        ACTION_STOP,
     }
 
-    fun createIntent(
-        context: Context,
-        notificationAction: Actions,
-        timerData: TimerData,
-    ): Intent {
+    fun createIntent(context: Context, notificationAction: Actions, timerData: TimerData): Intent {
         val actionIntent = Intent(context, TimerActionBroadcastReceiver::class.java).apply {
             action = notificationAction.name
         }
@@ -50,7 +49,7 @@ object TimerActions {
         context,
         SystemClock.elapsedRealtime().toInt(),
         createIntent(context, notificationAction, timerData),
-        PendingIntent.FLAG_MUTABLE,
+        PendingIntent.FLAG_IMMUTABLE,
     )
 }
 
@@ -61,7 +60,8 @@ class TimerActionBroadcastReceiver : BroadcastReceiver() {
             return
         }
         if (timerData.recipeId < 0) {
-            throw Exception("recipeId is ${timerData.recipeId}, that shouldn't happen")
+            Log.e("TimerActionReceiver", "Invalid recipeId ${timerData.recipeId}")
+            return
         }
         val workManager = WorkManager.getInstance(context)
 

@@ -8,7 +8,6 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.AnimationVector4D
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.math.MathUtils
 import com.omelan.cofi.R
 import com.omelan.cofi.model.DataStore
-import com.omelan.cofi.model.NEXT_STEP_ENABLED_DEFAULT_VALUE
+import com.omelan.cofi.model.WAVY_TIMER_DEFAULT_VALUE
 import com.omelan.cofi.share.components.StepNameText
 import com.omelan.cofi.share.components.TimeText
 import com.omelan.cofi.share.components.TimerValue
@@ -50,10 +49,9 @@ fun Track(
     stepLength: Float,
 ) {
     val context = LocalContext.current
-    val dataStore = DataStore(context)
-    val isWavyTimerEnabled by dataStore.getWavyTimerSetting().collectAsState(
-        initial = NEXT_STEP_ENABLED_DEFAULT_VALUE,
-    )
+    val isWavyTimerEnabled by remember(context) {
+        DataStore(context).getWavyTimerSetting()
+    }.collectAsState(initial = WAVY_TIMER_DEFAULT_VALUE)
     val stroke = with(LocalDensity.current) {
         Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
     }
@@ -97,12 +95,6 @@ fun Timer(
     } else {
         12.dp
     }
-    val calculatedAnimatedProgress = remember {
-        derivedStateOf {
-            animatedProgressValue.value * timeMultiplier
-        }
-    }
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier,
@@ -122,7 +114,6 @@ fun Timer(
             )
         }
         AnimatedVisibility(visible = isDone, enter = fadeIn(), exit = fadeOut()) {
-            val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
             Column(
                 modifier = Modifier
                     .padding(strokeWidth)
@@ -148,7 +139,7 @@ fun Timer(
                 }
                 Icon(
                     painter = painterResource(id = R.drawable.ic_coffee),
-                    contentDescription = "",
+                    contentDescription = null,
                     modifier = Modifier
                         .size(if (isInPiP) 24.dp else 48.dp)
                         .animateContentSize(),
@@ -204,7 +195,7 @@ fun Timer(
                     TimerValue(
                         modifier = Modifier.weight(1f, true),
                         currentStep = currentStep,
-                        animatedProgressValue = calculatedAnimatedProgress.value,
+                        animatedProgressValue = animatedProgressValue.value,
                         alreadyDoneWeight = alreadyDoneWeight,
                         weightMultiplier = weightMultiplier,
                         color = MaterialTheme.colorScheme.onSurface,

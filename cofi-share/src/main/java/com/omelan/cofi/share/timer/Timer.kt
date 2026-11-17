@@ -22,10 +22,9 @@ import com.omelan.cofi.share.model.StepType
 import com.omelan.cofi.share.timer.notification.*
 import com.omelan.cofi.share.utils.Haptics
 import com.omelan.cofi.share.utils.roundToDecimals
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 
 fun <R, T> suspendCompat(block: suspend (T) -> R): suspend (T) -> R = block
 
@@ -77,14 +76,14 @@ object Timer {
                             .toFloat().roundToDecimals()
 
                     CombineWeight.WATER.name -> (
-                            doneSteps.sumOf {
-                                if (it.type === StepType.WATER && it.value != null) {
-                                    it.value.toDouble()
-                                } else {
-                                    0.0
-                                }
-                            } * weightMultiplier
-                            ).toFloat().roundToDecimals()
+                        doneSteps.sumOf {
+                            if (it.type === StepType.WATER && it.value != null) {
+                                it.value.toDouble()
+                            } else {
+                                0.0
+                            }
+                        } * weightMultiplier
+                        ).toFloat().roundToDecimals()
 
                     else -> 0f
                 }
@@ -106,6 +105,9 @@ object Timer {
         val isDarkMode = isSystemInDarkTheme()
         val haptics = remember { Haptics(context) }
         val mediaPlayer = remember { MediaPlayer.create(context, R.raw.ding) }
+        DisposableEffect(mediaPlayer) {
+            onDispose { mediaPlayer?.release() }
+        }
         val isStepChangeSoundEnabled by dataStore.getStepChangeSoundSetting()
             .collectAsState(initial = STEP_SOUND_DEFAULT_VALUE)
         val isStepChangeVibrationEnabled by dataStore.getStepChangeVibrationSetting()
@@ -156,7 +158,7 @@ object Timer {
                 return@suspendCompat
             }
             if (isStepChangeSoundEnabled) {
-                mediaPlayer.start()
+                mediaPlayer?.start()
             }
             if (isStepChangeVibrationEnabled) {
                 haptics.progress()
@@ -185,7 +187,7 @@ object Timer {
                     override val scaleFactor: Float = 1f
                 },
             ) {
-                launch(Dispatchers.Default) {
+                launch {
                     animatedProgressColor.animateTo(
                         targetValue = if (isDarkMode) {
                             safeCurrentStep.type.colorNight
@@ -221,9 +223,9 @@ object Timer {
         DisposableEffect(lifecycleOwner, steps) {
             val observer = LifecycleEventObserver { _, event ->
                 when (event) {
-                    Lifecycle.Event.ON_RESUME -> {
-                        if (backgroundTimerState != true) {
-                            return@LifecycleEventObserver
+                    Lifecycle.Event.ON_RESUME -> coroutineScope.launch {
+                        if (dataStore.getBackgroundTimerSetting().first() != true) {
+                            return@launch
                         }
                         val workManager = WorkManager.getInstance(context)
                         val workInfoByIdLiveData = workManager
@@ -233,6 +235,12 @@ object Timer {
                             object : Observer<List<WorkInfo>> {
                                 override fun onChanged(value: List<WorkInfo>) {
                                     val workerInfo = value.firstOrNull()
+                                    if (
+                                        workerInfo?.state == WorkInfo.State.ENQUEUED ||
+                                        workerInfo?.state == WorkInfo.State.BLOCKED
+                                    ) {
+                                        return
+                                    }
                                     if (
                                         workerInfo == null ||
                                         !arrayOf(WorkInfo.State.RUNNING, WorkInfo.State.SUCCEEDED)
@@ -249,10 +257,12 @@ object Timer {
                                         }
                                     val stepID = progress.getInt(WORKER_PROGRESS_STEP, -1)
                                     weightMultiplier = progress.getFloat(
-                                        WORKER_PROGRESS_TIME_MULTIPLIER, 1f,
+                                        WORKER_PROGRESS_WEIGHT_MULTIPLIER,
+                                        1f,
                                     )
                                     timeMultiplier = progress.getFloat(
-                                        WORKER_PROGRESS_WEIGHT_MULTIPLIER, 1f,
+                                        WORKER_PROGRESS_TIME_MULTIPLIER,
+                                        1f,
                                     )
                                     val stepProgress =
                                         progress.getFloat(WORKER_PROGRESS_PROGRESS, 0f)

@@ -3,6 +3,7 @@ package com.omelan.cofi.share.timer.notification
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -14,9 +15,11 @@ import androidx.core.content.res.ResourcesCompat
 import com.omelan.cofi.share.R
 import com.omelan.cofi.share.model.Recipe
 import com.omelan.cofi.share.model.Step
-import com.omelan.cofi.share.utils.roundToDecimals
+import com.omelan.cofi.share.utils.hasDecimals
 import com.omelan.cofi.share.utils.toStringDuration
+import com.omelan.cofi.share.utils.toStringOneDecimal
 import com.omelan.cofi.share.utils.toStringShort
+import com.omelan.cofi.share.utils.toStringWhole
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.minutes
 
@@ -47,17 +50,15 @@ fun createContentText(
             (currentValueFromProgress * weightMultiplier) + alreadyDoneWeight
 
         val currentTargetValue = (it * weightMultiplier) + alreadyDoneWeight
-        val targetString = currentTargetValue.toStringShort()
-        val shouldShowDecimals = targetString.contains(".")
-        val currentValueString: Number = if (shouldShowDecimals) {
-            currentValueWithMultiplier.roundToDecimals()
+        val currentValueString = if (currentTargetValue.hasDecimals()) {
+            currentValueWithMultiplier.toStringOneDecimal()
         } else {
-            currentValueWithMultiplier.roundToInt()
+            currentValueWithMultiplier.toStringWhole()
         }
         context.getString(
             R.string.timer_progress_weight,
             currentValueString,
-            targetString,
+            currentTargetValue.toStringShort(),
         )
     } ?: ""
 
@@ -66,8 +67,14 @@ fun createContentText(
     return "$valueText$timeText".trim().ifBlank { null }
 }
 
+private fun createContentIntent(context: Context) =
+    context.packageManager.getLaunchIntentForPackage(context.packageName)?.let {
+        PendingIntent.getActivity(context, 0, it, PendingIntent.FLAG_IMMUTABLE)
+    }
+
 fun createDoneNotification(recipe: Recipe, context: Context) =
     NotificationCompat.Builder(context, TIMER_CHANNEL_ID).apply {
+        setContentIntent(createContentIntent(context))
         setContentTitle(context.getString(R.string.timer_enjoy))
         setSubText(recipe.name)
         setSmallIcon(R.drawable.ic_monochrome)
@@ -97,6 +104,7 @@ fun Step.toNotificationBuilder(
 ): NotificationCompat.Builder {
     val step = this
     return NotificationCompat.Builder(context, TIMER_CHANNEL_ID).run {
+        setContentIntent(createContentIntent(context))
         setSubText(recipe.name)
         setContentTitle(step.name)
         setContentText(

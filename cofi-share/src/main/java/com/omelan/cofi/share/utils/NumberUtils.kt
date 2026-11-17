@@ -42,20 +42,22 @@ fun Int.toStringDuration(
     }
 }
 
-fun String.safeToInt(): Int {
-    return when {
-        this.isBlank() -> 0
-        else -> {
-            try {
-                this.trim().toInt()
-            } catch (_: Exception) {
-                0
-            }
+fun String.safeToInt(): Int = when {
+    this.isBlank() -> 0
+
+    else -> {
+        try {
+            this.trim().toInt()
+        } catch (_: Exception) {
+            0
         }
     }
 }
 
 fun Float.toStringShort(): String = DecimalFormat("0.#").format(this)
+fun Float.toStringWhole(): String = DecimalFormat("0").format(this)
+fun Float.toStringOneDecimal(): String = DecimalFormat("0.0").format(this)
+fun Float.hasDecimals(): Boolean = toStringShort() != toStringWhole()
 fun Float.toStringShortWithDecimals(): String = DecimalFormat("0.00").format(this)
 fun Float.roundToDecimals(scale: Int = 1) = try {
     this.toBigDecimal()

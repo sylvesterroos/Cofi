@@ -2,6 +2,7 @@ package com.omelan.cofi.share.timer.notification
 
 const val COFI_TIMER_NOTIFICATION_ID = 2137
 const val COFI_TIMER_NOTIFICATION_TAG = "cofi_notification_timer"
+const val COFI_TIMER_DONE_NOTIFICATION_TAG = "cofi_notification_timer_done"
 const val COFI_TIMER_NOTIFICATION_RECIPE_ID = "cofi_timer_notification_recipe_id"
 const val COFI_TIMER_NOTIFICATION_START_TIME_DATA = "cofi_timer_notification_start_time_data"
 const val COFI_TIMER_NOTIFICATION_PROGRESS = "cofi_timer_notification_progress"
