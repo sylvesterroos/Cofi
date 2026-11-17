@@ -24,9 +24,11 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.omelan.cofi.model.DataStore
+import com.omelan.cofi.model.PIP_DEFAULT_VALUE
 import com.omelan.cofi.pages.addRecipe
 import com.omelan.cofi.pages.details.recipeDetails
 import com.omelan.cofi.pages.list.recipeList
@@ -36,9 +38,7 @@ import com.omelan.cofi.share.model.AppDatabase
 import com.omelan.cofi.share.pages.Destinations
 import com.omelan.cofi.ui.CofiTheme
 import com.omelan.cofi.utils.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 
 val LocalPiPState = staticCompositionLocalOf<Boolean> {
     error("AmbientPiPState value not available.")
@@ -57,10 +57,19 @@ class MainActivity : AppCompatActivity() {
         setTheme(R.style.Theme_Cofi)
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        addOnNewIntentListener {
+            mainActivityViewModel.setIntent(it)
+        }
+        lifecycleScope.launch {
+            DataStore(this@MainActivity).getPiPSetting().collect { isPiPEnabled = it }
+        }
+        WearUtils.observeChangesAndSendToWear(this)
         this.setContent(null) {
             MainNavigation()
         }
     }
+
+    private var isPiPEnabled = PIP_DEFAULT_VALUE
 
     private val onTimerRunning: (Boolean) -> Unit = { isRunning ->
         mainActivityViewModel.setCanGoToPiP(isRunning)
@@ -99,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         }
         CofiTheme {
             val darkIcons = MaterialTheme.colorScheme.background.luminance() > 0.5
-            DisposableEffect(darkIcons) {
+            LaunchedEffect(darkIcons) {
                 enableEdgeToEdge(
                     statusBarStyle = SystemBarStyle.auto(
                         android.graphics.Color.TRANSPARENT,
@@ -110,7 +119,6 @@ class MainActivity : AppCompatActivity() {
                         NAVIGATION_BAR_DARK_SCRIM,
                     ) { !darkIcons },
                 )
-                onDispose {}
             }
             CompositionLocalProvider(
                 LocalPiPState provides isInPiP,
@@ -168,11 +176,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        val isPiPEnabledFlow: Flow<Boolean> = DataStore(this).getPiPSetting()
-        var isPiPEnabled: Boolean
-        runBlocking {
-            isPiPEnabled = isPiPEnabledFlow.first()
-        }
         if (mainActivityViewModel.canGoToPiP.value == true && isPiPEnabled) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 enterPictureInPictureMode(PictureInPictureParams.Builder().build())
@@ -191,10 +194,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onResumedCompat() {
-        this.addOnNewIntentListener {
-            mainActivityViewModel.setIntent(it)
-        }
-
         val currentPiPStatus = mainActivityViewModel.canGoToPiP.value ?: false
         if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
@@ -205,11 +204,5 @@ class MainActivity : AppCompatActivity() {
                 PictureInPictureParams.Builder().setAutoEnterEnabled(false).build(),
             )
         }
-        WearUtils.observeChangesAndSendToWear(this)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        WearUtils.removeObservers(this)
     }
 }

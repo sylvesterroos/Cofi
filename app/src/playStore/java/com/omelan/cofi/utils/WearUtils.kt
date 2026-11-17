@@ -102,7 +102,7 @@ object WearUtils {
         val dataStore = DataStore(activity)
         recipesLiveData = db.recipeDao().getAll()
         stepsLiveData = db.stepDao().getAll()
-        CoroutineScope(Dispatchers.IO + Job()).launch {
+        activity.lifecycleScope.launch(Dispatchers.IO) {
             combine(
                 dataStore.getStepChangeSoundSetting(),
                 dataStore.getStepChangeVibrationSetting(),
@@ -125,15 +125,6 @@ object WearUtils {
         }
         stepsLiveData.observe(activity) { steps ->
             channelClient.sendDataToWearOS(steps, "steps", activity)
-        }
-    }
-
-    fun removeObservers(activity: AppCompatActivity) {
-        if (::recipesLiveData.isInitialized) {
-            recipesLiveData.removeObservers(activity)
-        }
-        if (::stepsLiveData.isInitialized) {
-            stepsLiveData.removeObservers(activity)
         }
     }
 
