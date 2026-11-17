@@ -95,7 +95,6 @@
     <string name="recipe_clone_suffix">%1$s - Copiar</string>
     <string name="app_version">Versión de la aplicación</string>
     <string name="recipe_details_noTime">Pulse Inicio para continuar</string>
-    <string name="step_add_duration_explainer">La duración del paso determina el tiempo que tardará una acción (en segundos). Si desea crear un paso que retenga toda la receta hasta que le lean, déjelo vacío.</string>
     <string name="settings_backup">Copia de seguridad</string>
     <string name="settings_restore">Restaurar</string>
     <string name="settings_addDefault">Añadir recetas por defecto</string>

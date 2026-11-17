@@ -111,7 +111,6 @@
     <string name="recipe_clone_suffix">%1$s – نسخة</string>
     <string name="app_version">إصدار التطبيق</string>
     <string name="recipe_details_noTime">أضغط بدء للإستمرار</string>
-    <string name="step_add_duration_explainer">مدة الخطوة تحدد الوقت اللازم لإنهاء إجراء معين (بالثواني). إترك الحقل فارغاً ليتم إيقاف المؤقت حتى تكون جاهزاً.</string>
     <string name="settings_backup">النسخ الاحتياطي</string>
     <string name="settings_restore">استرجاع النسخ الاحتياطي</string>
     <string name="settings_addDefault">قم بإضافة وصفات أساسية</string>

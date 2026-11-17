@@ -121,7 +121,6 @@
     <string name="recipe_details_multiply_time">Multiplicateur de temps</string>
     <string name="prepopulate_aero_name">AeroPress</string>
     <string name="settings_step_vibrate_item">Vibrations par paliers</string>
-    <string name="step_add_duration_explainer">La durée de l\'étape détermine la durée de l\'action (en secondes). Laisser vide pour mettre la recette en pause jusqu\'à ce que vous soyez prêt·e.</string>
     <string name="settings_backup_item">Sauvegarde/Restauration</string>
     <string name="recipe_details_multiply_weight">Multiplicateur de poids</string>
     <string name="infoBox_wearOS_body">Téléchargez l\'application Cofi pour votre montre WearOS !</string>

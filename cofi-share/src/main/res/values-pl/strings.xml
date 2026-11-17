@@ -87,7 +87,6 @@
     <string name="recipe_clone_suffix">%1$s - Kopia</string>
     <string name="recipe_details_noTime">Wciśnij start żeby kontunuować</string>
     <string name="app_version">Wersja aplikacji</string>
-    <string name="step_add_duration_explainer">Czas trwania decyduje, ile masz czasu na skończenie tego kroku (w sekundach). Jeśli chcesz stworzyć krok, który wstrzymuje przepis, do czasu aż jesteś gotowy, pozostaw to pole puste.</string>
     <string name="settings_backup">Kopia zapasowa</string>
     <string name="settings_restore">Przywróć kopię zapasową</string>
     <string name="settings_addDefault">Dodaj początkowe przepisy</string>

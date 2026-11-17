@@ -86,6 +86,8 @@ enum class StepType(
     ;
 
     fun isNotWaitStepType(): Boolean = this != WAIT
+
+    val isTimedByDefault: Boolean get() = this == WAIT || this == WATER
 }
 
 open class StepTypeConverter {

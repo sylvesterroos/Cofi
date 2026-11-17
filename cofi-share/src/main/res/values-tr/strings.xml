@@ -85,7 +85,6 @@
     <string name="recipe_clone_suffix">%1$s - Kopyala</string>
     <string name="app_version">Uygulama versiyonu</string>
     <string name="recipe_details_noTime">Devam etmek için başlaya basın</string>
-    <string name="step_add_duration_explainer">Adım süreci bir aksiyonun ne kadar zaman alacağını belirler (saniye olarak).  Eğer siz okurken bekleyecek bir adım yaratacaksanız sadece boş bırakın.</string>
     <string name="settings_backup">Yedekle</string>
     <string name="settings_restore">Yenile</string>
     <string name="settings_addDefault">Varsayılan tarifler ekle</string>

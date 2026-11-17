@@ -33,7 +33,6 @@
     <string name="step_add_duration">Положительность (с)</string>
     <string name="button_discard">Отклонить</string>
     <string name="prepopulate_step_water">Добавить воды</string>
-    <string name="step_add_duration_explainer">Продолжительность шага определяет, сколько времени займет действие (в секундах). Оставьте пустым, чтобы приостановить выполнение рецепта, пока не будете готовы продолжить.</string>
     <string name="infoBox_wearOS_body">Скачай Cofi на свои часы с WearOS!</string>
     <string name="prepopulate_v60_1cup_name">1 чашка V60</string>
     <string name="settings_sync_with_phone">Синхронизировать с настройками телефона</string>

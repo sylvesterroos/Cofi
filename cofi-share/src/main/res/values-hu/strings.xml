@@ -94,7 +94,6 @@
     <string name="recipe_clone_suffix">%1$s - Másolás</string>
     <string name="app_version">App verzió</string>
     <string name="recipe_details_noTime">Folytatáshoz nyomja meg a start gombot</string>
-    <string name="step_add_duration_explainer">A lépés időtartama határozza meg, hogy mennyi ideig tart egy művelet (másodpercben). Hagyja üresen a recept szüneteltetéséhez, amíg készen nem áll.</string>
     <string name="settings_backup">Biztonsági mentés</string>
     <string name="settings_restore">Visszaállítás</string>
     <string name="settings_addDefault">Alapértelmezett receptek hozzáadása</string>

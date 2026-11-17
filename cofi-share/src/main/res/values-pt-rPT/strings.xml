@@ -84,7 +84,6 @@
     <string name="recipe_clone_suffix">%1$s - Copiar</string>
     <string name="app_version">Versão da App</string>
     <string name="recipe_details_noTime">Pressione em iniciar para continuar</string>
-    <string name="step_add_duration_explainer">A duração do passo determina o tempo da ação (em segundos). Deixe em branco para colocar a receita em pausa até quando você pronto(a).</string>
     <string name="settings_backup">Cópia de segurança</string>
     <string name="settings_restore">Restaurar</string>
     <string name="settings_addDefault">Adicionar receitas padrão</string>

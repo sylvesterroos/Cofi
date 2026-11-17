@@ -73,7 +73,6 @@
     <string name="infoBox_wearOS_body">הורד את Cofi לשעון הWearOS שלך!</string>
     <string name="settings_sync_with_phone">חלץ הגדרות מהמכשיר</string>
     <string name="infoBox_wearOS_title">Cofi נמצא עכשיו גם בWearOS</string>
-    <string name="step_add_duration_explainer">אורך השלב קובע כמה זמן פעולה תיקח (בשניות). השאר ריק כדי לעצור את המתכון עד שאתה מוכן.</string>
     <string name="settings_step_vibrate_item">רטט בעת מעבר שלב</string>
     <string name="recipe_details_multiply_time">כופל זמן</string>
     <string name="recipe_details_multiply_weight">כופל משקל</string>

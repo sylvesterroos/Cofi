@@ -103,7 +103,6 @@
 \nРозмір помелу: Для світлого обсмаження - середньо-дрібний. Чим темніша кава, тим грубіший помел.
 \nТемпература: Для світлого обсмажування - доведіть до кипіння і використовуйте негайно. Для темного обсмажування - 85-90 ℃</string>
     <string name="recipe_clone_suffix">%1$s - Копіювати</string>
-    <string name="step_add_duration_explainer">Тривалість кроку визначає, скільки часу триватиме дія (в секундах). Залиште порожнім, щоб призупинити рецепт до готовності.</string>
     <string name="settings_restore">Відновлення</string>
     <string name="settings_step_vibrate_item">Вібрувати при зміні кроку</string>
     <string name="recipe_details_multiply_time">Множник часу</string>

@@ -108,7 +108,6 @@
     <string name="notification_action_continue">தொடரவும்</string>
     <string name="notification_action_pause">இடைநிறுத்தம்</string>
     <string name="recipe_details_noTime">தொடர தொடக்கத்தை அழுத்தவும்</string>
-    <string name="step_add_duration_explainer">ஒரு நடவடிக்கை எவ்வளவு காலம் எடுக்கும் (நொடிகளில்) படி காலம் தீர்மானிக்கிறது. நீங்கள் தயாராக இருக்கும் வரை செய்முறையை இடைநிறுத்த காலியாக விடவும்.</string>
     <string name="settings_backup">காப்புப்பிரதி</string>
     <string name="settings_restore">மீட்டமை</string>
     <string name="settings_addDefault">இயல்புநிலை சமையல் சேர்க்கவும்</string>

@@ -113,7 +113,6 @@
     <string name="recipe_clone_suffix">%1$s - Αντίγραφο</string>
     <string name="app_version">Έκδοση εφαρμογής</string>
     <string name="recipe_details_noTime">Πατήστε έναρξη για να συνεχίσετε</string>
-    <string name="step_add_duration_explainer">Η διάρκεια του βήματος καθορίζει πόσο χρόνο θα πάρει μια ενέργεια (σε δευτερόλεπτα). Αφήστε το κενό για να παύσετε τη συνταγή μέχρι να είστε έτοιμοι.</string>
     <string name="settings_backup">Αντίγραφο ασφαλείας</string>
     <string name="settings_restore">Επαναφορά</string>
     <string name="settings_addDefault">Προσθήκη προεπιλεγμένων συνταγών</string>

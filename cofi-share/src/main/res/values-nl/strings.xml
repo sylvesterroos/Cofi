@@ -6,6 +6,8 @@
     <string name="step_type_other">Overig</string>
     <string name="step_add_name">Naam</string>
     <string name="step_add_duration">Tijd (in sec.)</string>
+    <string name="step_add_timer_enabled">Met timer</string>
+    <string name="step_add_timer_manual">Handmatig doorgaan</string>
     <string name="step_add_weight">Gewicht (in g.)</string>
     <string name="step_add_save">Opslaan</string>
     <string name="recipe_unsaved_title">Je hebt niet-opgeslagen wijzigingen</string>
@@ -93,7 +95,6 @@
     <string name="recipe_clone_suffix">%1$s (kopie)</string>
     <string name="app_version">Appversie</string>
     <string name="recipe_details_noTime">Druk op ‘Beginnen’ om verder te gaan</string>
-    <string name="step_add_duration_explainer">De lengte van een stap bepaalt hoelang een actie duurt (in seconden). Laat leeg om het recept te pauzeren totdat je er klaar voor bent.</string>
     <string name="settings_backup">Reservekopie maken</string>
     <string name="settings_restore">Herstellen</string>
     <string name="settings_addDefault">Standaardrecepten toevoegen</string>

@@ -32,6 +32,27 @@ class StepAddCardTest {
     }
 
     @Test
+    fun testTimerDefaultsFollowStepType() {
+        composeTestRule.setContent {
+            CofiTheme {
+                StepAddCard(save = {}, stepToEdit = null, orderInRecipe = 0, recipeId = 0)
+            }
+        }
+        StepType.entries.forEach { stepType ->
+            composeTestRule.onNodeWithTag(
+                "step_type_button_${stepType.name.lowercase(Locale.getDefault())}",
+            ).performClick()
+            if (stepType.isTimedByDefault) {
+                composeTestRule.onNodeWithTag("step_time").assertExists()
+            } else {
+                composeTestRule.onNodeWithTag("step_time").assertDoesNotExist()
+            }
+        }
+        composeTestRule.onNodeWithTag("step_timer_enabled").performClick()
+        composeTestRule.onNodeWithTag("step_time").assertExists()
+    }
+
+    @Test
     fun testFillName() {
         composeTestRule.setContent {
             CofiTheme {

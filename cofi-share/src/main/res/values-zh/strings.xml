@@ -88,7 +88,6 @@
     <string name="recipe_clone_suffix">%1$s - 复制</string>
     <string name="app_version">添加版本</string>
     <string name="recipe_details_noTime">按开始继续</string>
-    <string name="step_add_duration_explainer">步骤持续时间决定一个操作需要多长时间（以秒为单位）。留空以暂停配方，直到准备好为止。</string>
     <string name="settings_backup">Backup</string>
     <string name="settings_restore">恢复</string>
     <string name="settings_addDefault">添加默认配方</string>

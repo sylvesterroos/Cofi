@@ -123,7 +123,6 @@
 \nTemperatura: quanto mais quente, melhor (principalmente em assados mais leves) 
 \nCertifique-se de que a parte mais rígida do filtro esteja no lado da drenagem 
 \nFique atento para não bloquear o ar que sai da cafeteira</string>
-    <string name="step_add_duration_explainer">A duração da etapa determina quanto tempo uma ação levará (em segundos). Deixe em branco para pausar a receita até estar pronto.</string>
     <string name="settings_sync_with_phone">Obter configurações do telefone</string>
     <string name="name_drip">Pingar</string>
     <string name="name_cezve">Cezve</string>

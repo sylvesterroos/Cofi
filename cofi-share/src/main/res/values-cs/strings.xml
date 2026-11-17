@@ -101,7 +101,6 @@
     <string name="app_version">Verze aplikace</string>
     <string name="recipe_details_noTime">Stiskněte začít pro pokračování</string>
     <string name="tereszkiewicz_credits_subtitle">Podívejte se na jeho Dribbble</string>
-    <string name="step_add_duration_explainer">Délka kroku určuje jak dlouho bude akce trvat (v sekundách). Nechte prázdné pro pozastavení receptu dokud nejste připraveni.</string>
     <string name="settings_backup">Záloha</string>
     <string name="settings_restore">Obnovit</string>
     <string name="settings_addDefault">Přidat základní recepty</string>

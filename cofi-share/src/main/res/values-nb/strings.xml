@@ -86,7 +86,6 @@
     <string name="recipe_clone_suffix">%1$s - Kopier</string>
     <string name="app_version">App versjon</string>
     <string name="recipe_details_noTime">Tryykk start for å fortsette</string>
-    <string name="step_add_duration_explainer">Trinn varighet bestemmer hvor lenge en trinn varer (i sekunder). Om du vill opprette en trinn som ikke er tidsbegrenset kan dette stå tomt.</string>
     <string name="settings_backup">Sikkerhetskopier</string>
     <string name="settings_restore">Gjenopprett</string>
     <string name="settings_addDefault">Legg til standard oppskrift</string>

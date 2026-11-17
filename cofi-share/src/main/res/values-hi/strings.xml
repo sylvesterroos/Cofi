@@ -93,7 +93,6 @@
     <string name="recipe_clone_suffix">%1$s - की नकल</string>
     <string name="app_version">ऍप वर्शन</string>
     <string name="recipe_details_noTime">शुरू करने के लिए स्टार्ट बटन दबाये</string>
-    <string name="step_add_duration_explainer">स्टेप अवधि निर्धारित करती है कि कोई कार्य कितनी देर तक चलेगा (सेकंड में)। जब तक आप तैयार न हों तब तक नुस्खे को रोकने के लिए खाली छोड़ दें।</string>
     <string name="settings_backup">बैकअप</string>
     <string name="settings_restore">रिस्टोर</string>
     <string name="settings_addDefault">डिफ़ॉल्ट नुस्खा जोड़ें</string>

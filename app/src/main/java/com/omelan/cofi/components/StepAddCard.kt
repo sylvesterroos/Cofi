@@ -16,7 +16,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Done
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.*
@@ -83,12 +82,7 @@ fun StepAddCard(
     var stepValue by remember(stepToEdit) {
         mutableStateOf((stepToEdit?.value ?: 0).toString())
     }
-    var timeExplainerIsOpen by remember {
-        mutableStateOf(false)
-    }
-    val dismissTimeExplainer: () -> Unit = {
-        timeExplainerIsOpen = false
-    }
+    var hasTimer by remember(stepToEdit) { mutableStateOf(stepToEdit?.time != null) }
     val nameFocusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
@@ -99,7 +93,7 @@ fun StepAddCard(
         save(
             Step(
                 name = stepName.text,
-                time = if (stepTime.isBlank()) null else stepTime.safeToInt().toMillis(),
+                time = if (hasTimer) stepTime.safeToInt().toMillis() else null,
                 type = pickedType ?: StepType.OTHER,
                 value = if (stepValue.isNotBlank() &&
                     stepValue.toFloatOrNull() != 0f &&
@@ -149,6 +143,9 @@ fun StepAddCard(
                                     TextFieldValue(defaultName, TextRange(defaultName.length))
                             }
                             pickedType = stepType
+                            if (stepToEdit == null) {
+                                hasTimer = stepType.isTimedByDefault
+                            }
                         },
                         shapes = when (index) {
                             0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
@@ -202,49 +199,63 @@ fun StepAddCard(
                         }
                         .fillMaxWidth(),
                 )
-                OutlinedNumbersField(
-                    label = { Text(text = stringResource(id = R.string.step_add_duration)) },
-                    value = stepTime,
-                    allowFloat = false,
-                    onValueChange = { value ->
-                        stepTime = value
-                    },
-                    supportingText = {
-                        val duration = (stepTime.toIntOrNull()?.times(1000))
-                        if (duration != null) {
-                            Text(text = duration.toStringDuration())
-                        }
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = { timeExplainerIsOpen = true }) {
-                            Icon(
-                                Icons.Rounded.Info,
-                                contentDescription = stringResource(
-                                    id = R.string.step_add_duration_info,
-                                ),
-                            )
-                        }
-                    },
-                    imeAction = when {
-                        pickedType?.isNotWaitStepType() == true -> ImeAction.Next
-                        stepName.text.isNotBlank() -> ImeAction.Done
-                        else -> ImeAction.Previous
-                    },
-                    keyboardActions = KeyboardActions(
-                        onPrevious = { focusManager.moveFocus(FocusDirection.Up) },
-                        onNext = {
-                            focusManager.moveFocus(FocusDirection.Down)
-                        },
-                        onDone = {
-                            saveStep()
-                        },
-                    ),
+                SingleChoiceSegmentedButtonRow(
                     modifier = Modifier
-                        .testTag("step_time")
                         .padding(Spacing.xSmall)
-                        .animateContentSize()
                         .fillMaxWidth(),
-                )
+                ) {
+                    SegmentedButton(
+                        selected = hasTimer,
+                        onClick = { hasTimer = true },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                        modifier = Modifier.testTag("step_timer_enabled"),
+                    ) {
+                        Text(text = stringResource(id = R.string.step_add_timer_enabled))
+                    }
+                    SegmentedButton(
+                        selected = !hasTimer,
+                        onClick = { hasTimer = false },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                        modifier = Modifier.testTag("step_timer_manual"),
+                    ) {
+                        Text(text = stringResource(id = R.string.step_add_timer_manual))
+                    }
+                }
+                AnimatedVisibility(visible = hasTimer) {
+                    OutlinedNumbersField(
+                        label = { Text(text = stringResource(id = R.string.step_add_duration)) },
+                        value = stepTime,
+                        allowFloat = false,
+                        onValueChange = { value ->
+                            stepTime = value
+                        },
+                        supportingText = {
+                            val duration = (stepTime.toIntOrNull()?.times(1000))
+                            if (duration != null) {
+                                Text(text = duration.toStringDuration())
+                            }
+                        },
+                        imeAction = when {
+                            pickedType?.isNotWaitStepType() == true -> ImeAction.Next
+                            stepName.text.isNotBlank() -> ImeAction.Done
+                            else -> ImeAction.Previous
+                        },
+                        keyboardActions = KeyboardActions(
+                            onPrevious = { focusManager.moveFocus(FocusDirection.Up) },
+                            onNext = {
+                                focusManager.moveFocus(FocusDirection.Down)
+                            },
+                            onDone = {
+                                saveStep()
+                            },
+                        ),
+                        modifier = Modifier
+                            .testTag("step_time")
+                            .padding(Spacing.xSmall)
+                            .animateContentSize()
+                            .fillMaxWidth(),
+                    )
+                }
                 AnimatedVisibility(visible = pickedType?.isNotWaitStepType() == true) {
                     OutlinedNumbersField(
                         label = { Text(text = stringResource(id = R.string.step_add_weight)) },
@@ -294,7 +305,7 @@ fun StepAddCard(
                         modifier = Modifier.testTag("step_save"),
                         text = stringResource(id = R.string.step_add_save),
                         painter = rememberVectorPainter(Icons.Rounded.Done),
-                        enabled = stepName.text.isNotBlank(),
+                        enabled = stepName.text.isNotBlank() && (!hasTimer || stepTime.isNotBlank()),
                         onClick = { saveStep() },
                     )
                 }
@@ -330,28 +341,6 @@ fun StepAddCard(
                 }
             }
         }
-    }
-    if (timeExplainerIsOpen) {
-        AlertDialog(
-            onDismissRequest = dismissTimeExplainer,
-            confirmButton = {
-                TextButton(onClick = dismissTimeExplainer) {
-                    Text(text = stringResource(id = android.R.string.ok))
-                }
-            },
-            icon = {
-                Icon(
-                    painterResource(StepType.WAIT.iconRes),
-                    contentDescription = null,
-                )
-            },
-            title = {
-                Text(text = stringResource(id = R.string.step_add_duration))
-            },
-            text = {
-                Text(text = stringResource(id = R.string.step_add_duration_explainer))
-            },
-        )
     }
     LaunchedEffect(key1 = isExpanded) {
         if (isExpanded) {
