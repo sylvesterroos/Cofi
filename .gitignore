@@ -92,3 +92,14 @@ fastlane/Appfile
 
 .DS_Store
 /.idea/deploymentTargetDropDown.xml
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# Android user home (devenv)
+/.android
