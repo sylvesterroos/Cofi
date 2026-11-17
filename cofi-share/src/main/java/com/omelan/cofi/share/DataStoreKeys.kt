@@ -19,10 +19,9 @@ enum class CombineWeight(@StringRes val settingsStringId: Int) {
     NONE(R.string.settings_combine_weight_none),
 }
 
-fun stringToCombineWeight(string: String) =
-    when (string) {
-        CombineWeight.ALL.name -> CombineWeight.ALL
-        CombineWeight.WATER.name -> CombineWeight.WATER
-        CombineWeight.NONE.name -> CombineWeight.NONE
-        else -> CombineWeight.WATER
-    }
+fun stringToCombineWeight(string: String) = when (string) {
+    CombineWeight.ALL.name -> CombineWeight.ALL
+    CombineWeight.WATER.name -> CombineWeight.WATER
+    CombineWeight.NONE.name -> CombineWeight.NONE
+    else -> CombineWeight.WATER
+}

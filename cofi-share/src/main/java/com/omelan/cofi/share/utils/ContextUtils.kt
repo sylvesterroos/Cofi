@@ -13,7 +13,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import com.omelan.cofi.share.timer.notification.TIMER_CHANNEL_ID
 
-
 fun Context.getActivity(): ComponentActivity? = when (this) {
     is ComponentActivity -> this
     is ContextWrapper -> baseContext.getActivity()
@@ -34,32 +33,32 @@ fun Context.askForPermission(permissions: String) {
     }
 }
 
-fun Context.askForNotificationPermission() =
-    when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> askForPermission(Manifest.permission.POST_NOTIFICATIONS)
+fun Context.askForNotificationPermission() = when {
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> askForPermission(
+        Manifest.permission.POST_NOTIFICATIONS,
+    )
 
-        !hasNotificationPermission() -> {
-            val intent = Intent()
-            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS")
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.putExtra("app_package", packageName)
-            intent.putExtra("app_uid", applicationInfo.uid)
-            intent.putExtra("android.provider.extra.APP_PACKAGE", packageName)
-            startActivity(intent)
-        }
-
-        else -> {}
+    !hasNotificationPermission() -> {
+        val intent = Intent()
+        intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS")
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.putExtra("app_package", packageName)
+        intent.putExtra("app_uid", applicationInfo.uid)
+        intent.putExtra("android.provider.extra.APP_PACKAGE", packageName)
+        startActivity(intent)
     }
+
+    else -> {}
+}
 
 fun Context.hasNotificationPermission(): Boolean {
     val notificationManagerCompat = NotificationManagerCompat.from(this)
     val allNotificationSwitch = notificationManagerCompat.areNotificationsEnabled()
     val channelNotificationSwitch = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         notificationManagerCompat.getNotificationChannel(TIMER_CHANNEL_ID)?.importance !=
-                NotificationManager.IMPORTANCE_NONE
+            NotificationManager.IMPORTANCE_NONE
     } else {
         true
     }
     return allNotificationSwitch && channelNotificationSwitch
 }
-

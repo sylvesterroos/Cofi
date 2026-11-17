@@ -53,7 +53,6 @@ open class DataStore(private val context: Context) {
         }
     }
 
-
     suspend fun toggleStepChangeSound() {
         context.dataStore.edit {
             val currentStepSoundState = it[STEP_SOUND_ENABLED] ?: STEP_SOUND_DEFAULT_VALUE

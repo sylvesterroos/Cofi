@@ -11,7 +11,11 @@ class Haptics(context: Context) {
     @Suppress("DEPRECATION") // VIBRATOR_SERVICE is the only option below API 31
     private val vibrator =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            (context.applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
+            (
+                context.applicationContext.getSystemService(
+                    Context.VIBRATOR_MANAGER_SERVICE,
+                ) as VibratorManager
+                ).defaultVibrator
         } else {
             context.applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
@@ -51,23 +55,28 @@ class Haptics(context: Context) {
                 effectId != null -> {
                     this.vibrate(VibrationEffect.createPredefined(effectId))
                 }
+
                 vibrationEffect != null -> {
                     this.vibrate(vibrationEffect)
                 }
+
                 else -> {
                     this.vibrate(300)
                 }
             }
         }
+
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
             when {
                 vibrationEffect != null -> {
                     this.vibrate(vibrationEffect)
                 }
+
                 else -> {
                     this.vibrate(300)
                 }
             }
+
         else ->
             this.vibrate(300)
     }
