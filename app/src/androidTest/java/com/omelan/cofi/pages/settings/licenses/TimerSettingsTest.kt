@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.omelan.cofi.LocalPiPState
 import com.omelan.cofi.pages.settings.TimerSettings
 import com.omelan.cofi.ui.CofiTheme

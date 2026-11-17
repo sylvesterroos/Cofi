@@ -1,9 +1,7 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt'
     id 'com.jaredsburrows.license'
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.21"
 }
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -23,8 +21,8 @@ android {
             }
         }
     }
-    namespace 'com.omelan.cofi.wearos'
-    compileSdkVersion 36
+    namespace = 'com.omelan.cofi.wearos'
+    compileSdkVersion 37
 
     defaultConfig {
         applicationId "com.omelan.cofi"
@@ -34,7 +32,7 @@ android {
         versionName "1.12.11"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
-            useSupportLibrary true
+            useSupportLibrary = true
         }
 
     }
@@ -42,9 +40,9 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            shrinkResources true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig keystoreProperties.containsKey('storeFile') ?
+            signingConfig = keystoreProperties.containsKey('storeFile') ?
                     signingConfigs.release : signingConfigs.debug
         }
         debug {
@@ -54,22 +52,19 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_19
-        targetCompatibility JavaVersion.VERSION_19
+        sourceCompatibility JavaVersion.VERSION_25
+        targetCompatibility JavaVersion.VERSION_25
     }
     kotlin {
-        jvmToolchain(19)
+        jvmToolchain(25)
     }
     buildFeatures {
-        compose true
+        compose = true
     }
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
-    }
-    kotlinOptions {
-        jvmTarget = '19'
     }
 }
 
@@ -85,27 +80,28 @@ licenseReport {
 
 dependencies {
     implementation project(path: ':cofi-share')
-    implementation platform("androidx.compose:compose-bom:$compose_bom_version")
+    implementation platform("androidx.compose:compose-bom:${rootProject.ext.compose_bom_version}")
+    androidTestImplementation platform("androidx.compose:compose-bom:${rootProject.ext.compose_bom_version}")
 
-    implementation 'androidx.core:core-ktx:1.16.0'
-    implementation 'com.google.android.gms:play-services-wearable:19.0.0'
-    implementation "androidx.wear:wear-remote-interactions:1.1.0"
-    implementation "androidx.wear.compose:compose-material3:$wear_compose_version"
-    implementation "androidx.wear.compose:compose-foundation:$wear_compose_version"
-    implementation "androidx.wear.compose:compose-navigation:$wear_compose_version"
+    implementation 'androidx.core:core-ktx:1.19.1'
+    implementation 'com.google.android.gms:play-services-wearable:20.0.1'
+    implementation "androidx.wear:wear-remote-interactions:1.2.0"
+    implementation "androidx.wear.compose:compose-material3:${rootProject.ext.wear_compose_version}"
+    implementation "androidx.wear.compose:compose-foundation:${rootProject.ext.wear_compose_version}"
+    implementation "androidx.wear.compose:compose-navigation:${rootProject.ext.wear_compose_version}"
     implementation("androidx.wear:wear-tooling-preview:1.0.0")
     implementation "androidx.compose.ui:ui-tooling-preview"
     implementation "androidx.compose.runtime:runtime-livedata"
-    implementation "com.google.android.horologist:horologist-compose-layout:0.6.23"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.2'
-    implementation 'androidx.activity:activity-compose:1.10.1'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.9.2"
-    implementation "androidx.wear:wear-input:1.1.0"
-    implementation 'androidx.wear:wear:1.3.0'
+    implementation "com.google.android.horologist:horologist-compose-layout:0.7.15"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.11.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.11.0'
+    implementation 'androidx.activity:activity-compose:1.13.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0"
+    implementation "androidx.wear:wear-input:1.2.0"
+    implementation 'androidx.wear:wear:1.4.0'
 
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:1.8.3"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
     debugImplementation "androidx.compose.ui:ui-tooling"
     debugImplementation "androidx.compose.ui:ui-test-manifest"
-    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test:core:1.7.0'
 }

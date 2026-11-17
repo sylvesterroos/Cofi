@@ -83,7 +83,7 @@ fun AppearanceSettings(goBack: () -> Unit) {
         ) {
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = "Dynamic Theme")
                     },
                     leadingContent = {
@@ -108,7 +108,7 @@ fun AppearanceSettings(goBack: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = "Wavy Timer")
                     },
                     leadingContent = {

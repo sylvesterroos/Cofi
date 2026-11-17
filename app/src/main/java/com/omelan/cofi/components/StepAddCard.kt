@@ -145,12 +145,13 @@ fun StepAddCard(
                         },
                         shapes = when (index) {
                             0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+
                             StepType.entries.lastIndex ->
                                 ButtonGroupDefaults.connectedTrailingButtonShapes()
 
                             else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                         },
-                        colors = ToggleButtonDefaults.toggleButtonColors(
+                        colors = ToggleButtonDefaults.colors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSurface,
                             checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,

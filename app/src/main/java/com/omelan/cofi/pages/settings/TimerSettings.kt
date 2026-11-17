@@ -110,7 +110,7 @@ fun TimerSettings(goBack: () -> Unit) {
         ) {
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = R.string.settings_pip_item))
                     },
                     leadingContent = {
@@ -137,7 +137,7 @@ fun TimerSettings(goBack: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(R.string.settings_background_timer_item))
                     },
                     leadingContent = {
@@ -146,7 +146,7 @@ fun TimerSettings(goBack: () -> Unit) {
                     modifier = Modifier.settingsItemModifier(onClick = toggleBackgroundTimer),
                     trailingContent = {
                         CofiSwitch(
-                            checked = isBackgroundTimerEnabled,
+                            checked = isBackgroundTimerEnabled == true,
                             onCheckedChange = { toggleBackgroundTimer() },
                         )
                     },
@@ -154,7 +154,7 @@ fun TimerSettings(goBack: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = R.string.settings_step_sound_item))
                     },
                     leadingContent = {
@@ -177,7 +177,7 @@ fun TimerSettings(goBack: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = R.string.settings_step_vibrate_item))
                     },
                     leadingContent = {
@@ -200,7 +200,7 @@ fun TimerSettings(goBack: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = R.string.settings_step_next_step_item))
                     },
                     leadingContent = {
@@ -226,7 +226,7 @@ fun TimerSettings(goBack: () -> Unit) {
                     overlineContent = {
                         Text(text = stringResource(id = R.string.settings_combine_weight_item))
                     },
-                    headlineContent = {
+                    content = {
                         Text(
                             text = stringResource(
                                 stringToCombineWeight(combineWeightState).settingsStringId,
@@ -275,7 +275,7 @@ fun CombineWeightDialog(
     ) {
         CombineWeight.entries.forEach {
             ListItem(
-                headlineContent = { Text(stringResource(id = it.settingsStringId)) },
+                content = { Text(stringResource(id = it.settingsStringId)) },
                 modifier = Modifier
                     .selectable(
                         selected = combineWeightState == it.name,

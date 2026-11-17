@@ -17,7 +17,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun Material3BottomSheet(
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    sheetState: SheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    ),
     onDismissRequest: () -> Unit,
     content: (dismiss: () -> Unit) -> @Composable ColumnScope.() -> Unit,
 ) {

@@ -3,7 +3,7 @@ package com.omelan.cofi.components
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.omelan.cofi.R
 import com.omelan.cofi.share.model.Step
 import com.omelan.cofi.share.model.StepType

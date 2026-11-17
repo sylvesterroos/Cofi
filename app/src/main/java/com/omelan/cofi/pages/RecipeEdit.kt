@@ -546,10 +546,7 @@ fun RecipeEdit(
 }
 
 @Composable
-private fun IconPickerBottomSheet(
-    setPickedIcon: (RecipeIcon) -> Unit,
-    onDismiss: () -> Unit,
-) {
+private fun IconPickerBottomSheet(setPickedIcon: (RecipeIcon) -> Unit, onDismiss: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
 
     Material3BottomSheet(onDismissRequest = onDismiss) { hideSheet ->
@@ -589,7 +586,9 @@ private fun IconPickerBottomSheet(
                                     Text(stringResource(id = it.nameResId))
                                 }
                             },
-                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                TooltipAnchorPosition.Above,
+                            ),
                             state = tooltipState,
                         ) {
                             Icon(

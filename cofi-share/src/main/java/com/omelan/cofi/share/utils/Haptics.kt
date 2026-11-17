@@ -8,6 +8,7 @@ import android.os.VibratorManager
 
 class Haptics(context: Context) {
 
+    @Suppress("DEPRECATION") // VIBRATOR_SERVICE is the only option below API 31
     private val vibrator =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             (context.applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
@@ -40,6 +41,7 @@ class Haptics(context: Context) {
         vibrator.vibrateCompat()
     }
 
+    @Suppress("DEPRECATION") // vibrate(Long) is the only option below API 26
     private fun Vibrator.vibrateCompat(
         effectId: Int? = null,
         vibrationEffect: VibrationEffect? = null,

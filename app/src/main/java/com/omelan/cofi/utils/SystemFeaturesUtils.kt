@@ -5,6 +5,7 @@ import android.app.AppOpsManager
 import android.content.Context
 import android.os.Build
 
+@Suppress("DEPRECATION") // AppOpsManager offers no replacement for the PiP op check
 fun checkPiPPermission(context: Context): Boolean {
     val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
     return when {
@@ -13,18 +14,13 @@ fun checkPiPPermission(context: Context): Boolean {
             android.os.Process.myUid(),
             context.packageName,
         ) == AppOpsManager.MODE_ALLOWED
+
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> appOps.checkOpNoThrow(
             AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
             android.os.Process.myUid(),
             context.packageName,
         ) == AppOpsManager.MODE_ALLOWED
+
         else -> false
     }
-}
-
-@SuppressLint("DiscouragedApi")
-fun isUsingGestures(context: Context): Boolean {
-    val resources = context.resources
-    val resourceId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
-    return if (resourceId > 0) resources.getInteger(resourceId) == 2 else false
 }

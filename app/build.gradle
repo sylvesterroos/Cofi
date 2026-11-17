@@ -1,9 +1,7 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
     id 'com.jaredsburrows.license'
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.21"
 }
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -28,7 +26,7 @@ android {
         applicationId "com.omelan.cofi"
         minSdkVersion 25
         targetSdkVersion 36
-        compileSdk 36
+        compileSdk 37
         versionCode 188
         versionName "1.21.11"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -37,15 +35,15 @@ android {
     }
 
     testOptions {
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        execution = 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     buildTypes {
         release {
             minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig keystoreProperties.containsKey('storeFile') ?
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig = keystoreProperties.containsKey('storeFile') ?
                     signingConfigs.release : signingConfigs.debug
         }
 
@@ -56,10 +54,10 @@ android {
         }
 
         benchmark {
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
             minifyEnabled true
             manifestPlaceholders["profileable"] = true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             applicationIdSuffix ".benchmark"
             versionNameSuffix "-benchmark"
         }
@@ -77,17 +75,17 @@ android {
     }
 
     buildFeatures {
-        compose true
-        buildConfig true
+        compose = true
+        buildConfig = true
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_19
-        targetCompatibility JavaVersion.VERSION_19
+        sourceCompatibility JavaVersion.VERSION_25
+        targetCompatibility JavaVersion.VERSION_25
     }
 
     kotlin {
-        jvmToolchain(19)
+        jvmToolchain(25)
     }
 
     packagingOptions {
@@ -111,10 +109,7 @@ android {
         // Adds exported schema location as test app assets.
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
     }
-    namespace 'com.omelan.cofi'
-    kotlinOptions {
-        jvmTarget = '19'
-    }
+    namespace = 'com.omelan.cofi'
 
 }
 
@@ -134,13 +129,14 @@ configurations {
 
 dependencies {
     implementation project(path: ':cofi-share')
-    implementation 'androidx.core:core-ktx:1.16.0'
-    ktlint("com.pinterest:ktlint:0.50.0") {
+    implementation 'androidx.core:core-ktx:1.19.1'
+    ktlint("com.pinterest.ktlint:ktlint-cli:1.8.0") {
         attributes {
             attribute(Bundling.BUNDLING_ATTRIBUTE, getObjects().named(Bundling, Bundling.EXTERNAL))
         }
     }
-    implementation platform("androidx.compose:compose-bom:$compose_bom_version")
+    implementation platform("androidx.compose:compose-bom:${rootProject.ext.compose_bom_version}")
+    androidTestImplementation platform("androidx.compose:compose-bom:${rootProject.ext.compose_bom_version}")
 
     playStoreImplementation 'com.google.android.gms:play-services-wearable:19.0.0'
     playStoreImplementation "androidx.wear:wear-remote-interactions:1.1.0"
@@ -151,25 +147,24 @@ dependencies {
     implementation "androidx.compose.ui:ui-tooling-preview"
 
     // Material Design
-    implementation "androidx.compose.material3:material3:1.4.0-alpha17"
+    implementation "androidx.compose.material3:material3:1.5.0-rc01"
     implementation "androidx.compose.material3:material3-window-size-class"
 
-    implementation 'androidx.palette:palette-ktx:1.0.0'
+    implementation 'androidx.palette:palette-ktx:1.1.0'
     // Navigation
-    implementation "androidx.navigation:navigation-compose:2.9.1"
+    implementation "androidx.navigation:navigation-compose:2.10.2"
 
     // Integration with observables
     implementation "androidx.compose.runtime:runtime-livedata"
     // Jetpack Utils
-    implementation "com.google.accompanist:accompanist-systemuicontroller:0.36.0"
     implementation "androidx.compose.animation:animation-graphics"
 
-    implementation "androidx.activity:activity-compose:1.10.1"
+    implementation "androidx.activity:activity-compose:1.13.0"
 
     // UI Tests
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:1.8.3"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
     testImplementation 'junit:junit:4.13.2'
-    androidTestUtil 'androidx.test:orchestrator:1.5.1'
+    androidTestUtil 'androidx.test:orchestrator:1.6.1'
 }
 
 tasks.register("ktlintCheck", JavaExec) {

@@ -66,7 +66,7 @@ fun AppSettingsAbout(goBack: () -> Unit, openLicenses: () -> Unit) {
         ) {
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = R.string.settings_github_item))
                     },
                     leadingContent = {
@@ -84,7 +84,7 @@ fun AppSettingsAbout(goBack: () -> Unit, openLicenses: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = R.string.settings_licenses_item))
                     },
                     leadingContent = {
@@ -102,7 +102,7 @@ fun AppSettingsAbout(goBack: () -> Unit, openLicenses: () -> Unit) {
                             overflow = TextOverflow.Ellipsis,
                         )
                     },
-                    headlineContent = {
+                    content = {
                         Text(
                             text = stringResource(id = R.string.hoffmann_credits_subtitle),
                             maxLines = 1,
@@ -131,7 +131,7 @@ fun AppSettingsAbout(goBack: () -> Unit, openLicenses: () -> Unit) {
                             overflow = TextOverflow.Ellipsis,
                         )
                     },
-                    headlineContent = {
+                    content = {
                         Text(
                             text = stringResource(id = R.string.tereszkiewicz_credits_subtitle),
                             maxLines = 1,
@@ -156,7 +156,7 @@ fun AppSettingsAbout(goBack: () -> Unit, openLicenses: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(
                             text = stringResource(id = R.string.support_title),
                             maxLines = 1,
@@ -176,7 +176,7 @@ fun AppSettingsAbout(goBack: () -> Unit, openLicenses: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(
                             text = stringResource(id = R.string.settings_translate_item),
                             maxLines = 1,
@@ -205,7 +205,7 @@ fun AppSettingsAbout(goBack: () -> Unit, openLicenses: () -> Unit) {
                             overflow = TextOverflow.Ellipsis,
                         )
                     },
-                    headlineContent = {
+                    content = {
                         Text(
                             text = BuildConfig.VERSION_NAME,
                             maxLines = 1,

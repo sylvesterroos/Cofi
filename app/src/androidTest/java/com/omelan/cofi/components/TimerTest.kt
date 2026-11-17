@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import com.omelan.cofi.share.model.Step
 import com.omelan.cofi.share.model.StepType

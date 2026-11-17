@@ -4,17 +4,21 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color.parseColor
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.compose.LocalActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.omelan.cofi.pages.RecipeEdit
 import com.omelan.cofi.pages.details.RecipeDetails
 import com.omelan.cofi.pages.list.RecipeList
@@ -39,10 +43,17 @@ class ScreenshotCreator {
     @SuppressLint("ComposableNaming")
     @Composable
     private fun setNavigationBarColor(darkMode: Boolean) {
-        rememberSystemUiController().setNavigationBarColor(
-            color = if (darkMode) Color(parseColor("#121212")) else Color.White,
-            darkIcons = darkMode,
-        )
+        val activity = LocalActivity.current as ComponentActivity
+        SideEffect {
+            val color = if (darkMode) parseColor("#121212") else android.graphics.Color.WHITE
+            activity.enableEdgeToEdge(
+                navigationBarStyle = if (darkMode) {
+                    SystemBarStyle.dark(color)
+                } else {
+                    SystemBarStyle.light(color, color)
+                },
+            )
+        }
     }
 
     private fun saveScreenshot(name: String) {

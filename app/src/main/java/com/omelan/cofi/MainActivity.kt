@@ -6,7 +6,9 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -20,12 +22,10 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.omelan.cofi.model.DataStore
 import com.omelan.cofi.pages.addRecipe
 import com.omelan.cofi.pages.details.recipeDetails
@@ -45,6 +45,9 @@ val LocalPiPState = staticCompositionLocalOf<Boolean> {
 }
 
 const val appDeepLinkUrl = "https://rozpierog.github.io"
+
+private val NAVIGATION_BAR_LIGHT_SCRIM = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
+private val NAVIGATION_BAR_DARK_SCRIM = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
 
 @ExperimentalMaterial3WindowSizeClassApi
 class MainActivity : AppCompatActivity() {
@@ -89,7 +92,6 @@ class MainActivity : AppCompatActivity() {
         val navController = rememberNavController()
         val db = AppDatabase.getInstance(this)
         val isInPiP by mainActivityViewModel.pipState.observeAsState(false)
-        val systemUiController = rememberSystemUiController()
         val windowSizeClass = calculateWindowSizeClass(this)
         val intent by mainActivityViewModel.intent.observeAsState()
         LaunchedEffect(intent) {
@@ -97,15 +99,18 @@ class MainActivity : AppCompatActivity() {
         }
         CofiTheme {
             val darkIcons = MaterialTheme.colorScheme.background.luminance() > 0.5
-            systemUiController.setStatusBarColor(
-                color = Color.Transparent,
-                darkIcons = darkIcons,
-            )
-            if (!isUsingGestures(applicationContext)) {
-                systemUiController.setNavigationBarColor(
-                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.8F),
-                    darkIcons = darkIcons,
+            DisposableEffect(darkIcons) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT,
+                    ) { !darkIcons },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        NAVIGATION_BAR_LIGHT_SCRIM,
+                        NAVIGATION_BAR_DARK_SCRIM,
+                    ) { !darkIcons },
                 )
+                onDispose {}
             }
             CompositionLocalProvider(
                 LocalPiPState provides isInPiP,

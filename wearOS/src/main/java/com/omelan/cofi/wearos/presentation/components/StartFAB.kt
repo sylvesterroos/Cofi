@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
+import androidx.wear.compose.material3.CompactButtonDefaults
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.MaterialTheme
 import com.omelan.cofi.wearos.R
@@ -31,7 +32,7 @@ fun StartFAB(isTimerRunning: Boolean, onClick: () -> Unit) {
         if (it) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onPrimary
     }
     val size by transition.animateDp(label = "Fab size") {
-        if (it) ButtonDefaults.CompactButtonHeight else ButtonDefaults.Height
+        if (it) CompactButtonDefaults.Height else ButtonDefaults.Height
     }
     val icon = remember(isTimerRunning) {
         if (isTimerRunning) R.drawable.ic_pause else R.drawable.ic_play

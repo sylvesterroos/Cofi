@@ -59,14 +59,14 @@ fun SupportCofi(onDismissRequest: () -> Unit) {
                 uriHandler.openUri("https://github.com/rozPierog/Cofi")
             },
             leadingContent = { Text("⭐") },
-            headlineContent = { Text(text = stringResource(id = R.string.support_dialog_github)) },
+            content = { Text(text = stringResource(id = R.string.support_dialog_github)) },
         )
         ListItem(
             modifier = Modifier.clickable {
                 uriHandler.openUri("https://fosstodon.org/@LeonOmelan")
             },
             leadingContent = { Text("🐘") },
-            headlineContent = {
+            content = {
                 Text(text = stringResource(id = R.string.support_dialog_mastodon))
             },
         )
@@ -76,7 +76,7 @@ fun SupportCofi(onDismissRequest: () -> Unit) {
                     uriHandler.openUri("https://ko-fi.com/leonomelan")
                 },
                 leadingContent = { Text("☕️") },
-                headlineContent = {
+                content = {
                     Text(text = stringResource(id = R.string.support_dialog_kofi))
                 },
             )
@@ -88,7 +88,7 @@ fun SupportCofi(onDismissRequest: () -> Unit) {
                     )
                 },
                 leadingContent = { Text("✍️") },
-                headlineContent = {
+                content = {
                     Text(text = stringResource(id = R.string.support_dialog_review))
                 },
             )

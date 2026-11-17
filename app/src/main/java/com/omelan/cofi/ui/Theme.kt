@@ -101,10 +101,7 @@ fun getMaterialYouPallets(context: Context, darkMode: Boolean) =
     if (darkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
 @Composable
-fun CofiTheme(
-    isDarkMode: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit,
-) {
+fun CofiTheme(isDarkMode: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val context = LocalContext.current
     val dataStore = DataStore(context)
     val dynamicThemeEnabled by dataStore.getDynamicThemeSetting().collectAsState(

@@ -11,7 +11,6 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import com.omelan.cofi.share.timer.notification.TIMER_CHANNEL_ID
 
 
@@ -46,7 +45,7 @@ fun Context.askForNotificationPermission() =
             intent.putExtra("app_package", packageName)
             intent.putExtra("app_uid", applicationInfo.uid)
             intent.putExtra("android.provider.extra.APP_PACKAGE", packageName)
-            ContextCompat.startActivity(this, intent, null)
+            startActivity(intent)
         }
 
         else -> {}

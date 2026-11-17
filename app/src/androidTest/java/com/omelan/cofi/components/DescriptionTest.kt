@@ -1,7 +1,7 @@
 package com.omelan.cofi.components
 
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.omelan.cofi.ui.CofiTheme
 import org.junit.Rule
 import org.junit.Test

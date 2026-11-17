@@ -8,10 +8,10 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 val MIGRATION_1_2 = object : Migration(1, 2) {
-    override fun migrate(database: SupportSQLiteDatabase) {
+    override fun migrate(db: SupportSQLiteDatabase) {
         // SQLite supports a limited operations for ALTER.
         // Create the new table
-        database.execSQL(
+        db.execSQL(
             "CREATE TABLE recipe_new (" +
                     "id INTEGER NOT NULL," +
                     "name TEXT NOT NULL," +
@@ -21,21 +21,21 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                     "PRIMARY KEY(id))",
         )
         // Copy the data
-        database.execSQL(
+        db.execSQL(
             "INSERT INTO recipe_new (id, name, description, last_finished) " +
                     "SELECT id, name, description, last_finished " +
                     "FROM recipe",
         )
         // Remove the old table
-        database.execSQL("DROP TABLE recipe")
+        db.execSQL("DROP TABLE recipe")
         // Change the table name to the correct one
-        database.execSQL("ALTER TABLE recipe_new RENAME TO recipe")
+        db.execSQL("ALTER TABLE recipe_new RENAME TO recipe")
     }
 }
 
 val MIGRATION_2_3 = object : Migration(2, 3) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE step ADD COLUMN order_in_recipe INTEGER")
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE step ADD COLUMN order_in_recipe INTEGER")
     }
 }
 
@@ -108,7 +108,7 @@ abstract class AppDatabase : RoomDatabase() {
                         this
                     }
                 }.addMigrations(*ALL_MIGRATIONS)
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance
 

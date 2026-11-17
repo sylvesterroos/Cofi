@@ -61,34 +61,38 @@ fun AppSettings(
         AppSetting(
             title = R.string.settings_timer_item,
             icon = R.drawable.ic_timer,
-            onClick = goToTimerSettings ,
+            onClick = goToTimerSettings,
         ),
         AppSetting(
             title = R.string.settings_backup_item,
             icon = R.drawable.ic_save,
-            onClick = goToBackupRestore ,
+            onClick = goToBackupRestore,
         ),
         AppSetting(
             title = R.string.settings_appearance_item,
             imageVector = Icons.Rounded.Face,
-            onClick = gotToAppearance ,
+            onClick = gotToAppearance,
         ),
         AppSetting(
             title = R.string.settings_about_item,
             imageVector = Icons.Rounded.Info,
-            onClick = goToAbout ,
+            onClick = goToAbout,
         ),
-        if (activity != null && wearNodesWithoutApp.isNotEmpty()) AppSetting(
-            title = R.string.settings_wearOS_item,
-            icon = R.drawable.ic_watch,
-            onClick = {
-                WearUtils.openPlayStoreOnWearDevicesWithoutApp(
-                    lifecycleOwner,
-                    activity,
-                    wearNodesWithoutApp,
-                )
-            },
-        ) else null,
+        if (activity != null && wearNodesWithoutApp.isNotEmpty()) {
+            AppSetting(
+                title = R.string.settings_wearOS_item,
+                icon = R.drawable.ic_watch,
+                onClick = {
+                    WearUtils.openPlayStoreOnWearDevicesWithoutApp(
+                        lifecycleOwner,
+                        activity,
+                        wearNodesWithoutApp,
+                    )
+                },
+            )
+        } else {
+            null
+        },
         AppSetting(
             title = R.string.settings_bug_item,
             icon = R.drawable.ic_bug_report,
@@ -97,7 +101,6 @@ fun AppSettings(
             },
         ),
     )
-
 
     Scaffold(
         topBar = {
@@ -136,7 +139,7 @@ fun AppSettings(
                 key = { i, item -> item.title },
             ) { index, setting ->
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = setting.title))
                     },
                     leadingContent = {

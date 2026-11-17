@@ -298,7 +298,7 @@ fun TimerPage(
                                             onClick = { showDescriptionDialog = true },
                                             modifier = Modifier
                                                 .padding(top = 8.dp)
-                                                .height(ButtonDefaults.CompactButtonHeight)
+                                                .height(CompactButtonDefaults.Height)
                                                 .fillMaxWidth(),
                                         ) {
                                             Text(

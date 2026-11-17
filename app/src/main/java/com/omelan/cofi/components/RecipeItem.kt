@@ -30,7 +30,7 @@ fun LazyGridItemScope.RecipeItem(
         shape = shape,
         iconResource = recipe.recipeIcon.icon,
         onPress = { onPress(recipe.id) },
-    )  {
+    ) {
         RecipeInfo(compactStyle = true, steps = allSteps)
     }
 }

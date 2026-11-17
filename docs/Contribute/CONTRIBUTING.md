@@ -7,9 +7,11 @@ title: Contribute code
 
 Cofi is built using **Jetpack Compose**
 
-To fully use **Jetpack Compose** you need [Android Studio Arctic Fox 2020.3.1](https://developer.android.com/studio/preview/features#2020.3.1) or higher.
+To fully use **Jetpack Compose** you need the latest stable [Android Studio](https://developer.android.com/studio).
 
- **Java 19 is required**
+ **Java 25 is required**
+
+The repository ships a [devenv](https://devenv.sh) environment with JDK 25, the Android SDK and Ruby for fastlane. Run `devenv shell` to enter it.
 
 # Bugfixes
 

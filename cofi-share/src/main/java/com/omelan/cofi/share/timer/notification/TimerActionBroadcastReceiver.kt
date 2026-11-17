@@ -4,9 +4,9 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Parcelable
 import android.os.SystemClock
+import androidx.core.content.IntentCompat
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -56,11 +56,7 @@ object TimerActions {
 
 class TimerActionBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val timerData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(ACTION_DATA, TimerData::class.java)
-        } else {
-            intent.getParcelableExtra(ACTION_DATA) as TimerData?
-        }
+        val timerData = IntentCompat.getParcelableExtra(intent, ACTION_DATA, TimerData::class.java)
         if (timerData == null) {
             return
         }

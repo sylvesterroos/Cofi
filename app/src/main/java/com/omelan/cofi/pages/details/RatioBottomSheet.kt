@@ -49,8 +49,9 @@ fun RatioBottomSheet(
 
     Material3BottomSheet(
         onDismissRequest = onDismissRequest,
-        sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true,
+        sheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
             confirmValueChange = {
                 if (it == SheetValue.Expanded) {
                     focusRequester.requestFocus()
@@ -223,7 +224,7 @@ private fun ColumnScope.ManualContent(
                     }
                 }
             },
-            colors = ToggleButtonDefaults.toggleButtonColors(
+            colors = ToggleButtonDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
             ),
             modifier = Modifier
@@ -285,10 +286,10 @@ private fun SliderWithValue(value: Float, setValue: (Float) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
+        val sliderState = rememberSliderState(value = value, steps = steps, trackRange = range)
+        sliderState.value = value
         Slider(
-            valueRange = range,
-            steps = steps,
-            value = value,
+            state = sliderState,
             onValueChange = { setValue(it.roundToDecimals()) },
             modifier = Modifier.weight(1f, true),
         )

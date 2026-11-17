@@ -12,13 +12,12 @@ const val tweenDuration = 300
 private fun offsetCalculation(width: Int) = width / 4
 fun AnimatedContentTransitionScope<NavBackStackEntry>.slideIn(
     towards: AnimatedContentTransitionScope.SlideDirection,
-) =
-    fadeIn(tween(tweenDuration, easing = LinearOutSlowInEasing)) +
-        slideIntoContainer(
-            towards,
-            animationSpec = tween(tweenDuration, easing = FastOutSlowInEasing),
-            initialOffset = { fullWidth -> -(offsetCalculation(fullWidth)) },
-        )
+) = fadeIn(tween(tweenDuration, easing = LinearOutSlowInEasing)) +
+    slideIntoContainer(
+        towards,
+        animationSpec = tween(tweenDuration, easing = FastOutSlowInEasing),
+        initialOffset = { fullWidth -> -(offsetCalculation(fullWidth)) },
+    )
 
 fun AnimatedContentTransitionScope<NavBackStackEntry>.slideOut(
     towards: AnimatedContentTransitionScope.SlideDirection,

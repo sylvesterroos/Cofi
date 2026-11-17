@@ -41,21 +41,20 @@ private fun extractUrls(text: String): List<String> {
 fun buildAnnotatedStringWithUrls(baseText: String) =
     buildAnnotatedStringWithUrls(baseText, MaterialTheme.colorScheme.secondary)
 
-fun buildAnnotatedStringWithUrls(baseText: String, color: Color) =
-    buildAnnotatedString {
-        val urlsInDescription = extractUrls(baseText)
-        append(baseText)
-        var lastPosition = 0
-        urlsInDescription.forEach {
-            val positionOfUrl = baseText.indexOf(it, startIndex = lastPosition)
-            lastPosition = positionOfUrl
-            addLink(
-                LinkAnnotation.Url(
-                    it,
-                    styles = linkSpanStyle(color),
-                ),
-                start = positionOfUrl,
-                end = positionOfUrl + it.length,
-            )
-        }
+fun buildAnnotatedStringWithUrls(baseText: String, color: Color) = buildAnnotatedString {
+    val urlsInDescription = extractUrls(baseText)
+    append(baseText)
+    var lastPosition = 0
+    urlsInDescription.forEach {
+        val positionOfUrl = baseText.indexOf(it, startIndex = lastPosition)
+        lastPosition = positionOfUrl
+        addLink(
+            LinkAnnotation.Url(
+                it,
+                styles = linkSpanStyle(color),
+            ),
+            start = positionOfUrl,
+            end = positionOfUrl + it.length,
+        )
     }
+}

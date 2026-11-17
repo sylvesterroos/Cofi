@@ -1,6 +1,6 @@
 package com.omelan.cofi.components
 
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.omelan.cofi.share.model.StepType
@@ -53,6 +53,7 @@ class StepAddCardTest {
             when (stepType) {
                 StepType.WAIT ->
                     composeTestRule.onNodeWithTag("step_value").assertDoesNotExist()
+
                 StepType.ADD_COFFEE, StepType.OTHER, StepType.WATER ->
                     composeTestRule.onNodeWithTag("step_value").assertExists()
             }

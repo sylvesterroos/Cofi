@@ -100,7 +100,7 @@ fun BackupRestoreSettings(goBack: () -> Unit, goToRoot: () -> Unit) {
         ) {
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = R.string.settings_addDefault))
                     },
                     leadingContent = { Icon(Icons.Rounded.AddCircle, contentDescription = null) },
@@ -114,7 +114,7 @@ fun BackupRestoreSettings(goBack: () -> Unit, goToRoot: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = {
+                    content = {
                         Text(text = stringResource(id = R.string.settings_backup))
                     },
                     leadingContent = {
@@ -194,7 +194,7 @@ fun RestoreListItem(afterRestore: (numberOfRestored: Int) -> Unit) {
         }
 
     ListItem(
-        headlineContent = { Text(text = stringResource(id = R.string.settings_restore)) },
+        content = { Text(text = stringResource(id = R.string.settings_restore)) },
         leadingContent = {
             Icon(
                 painterResource(id = R.drawable.ic_restore),
@@ -264,7 +264,7 @@ fun BackupDialog(dismiss: () -> Unit, afterBackup: (numberOfBackups: Int) -> Uni
                     if (isSelected) recipesToBackup.remove(it) else recipesToBackup.add(it)
                 }
                 ListItem(
-                    headlineContent = { Text(it.name) },
+                    content = { Text(it.name) },
                     modifier = Modifier
                         .selectable(selected = isSelected, onClick = onCheck),
                     leadingContent = {
@@ -327,7 +327,7 @@ fun DefaultRecipesDialog(dismiss: () -> Unit) {
                         if (isSelected) recipesToAdd.remove(it) else recipesToAdd.add(it)
                     }
                     ListItem(
-                        headlineContent = { Text(it.name) },
+                        content = { Text(it.name) },
                         modifier = Modifier.selectable(
                             selected = isSelected,
                             onClick = onCheck,
