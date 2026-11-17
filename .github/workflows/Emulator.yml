@@ -18,7 +18,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         api-level: [30]
@@ -36,6 +36,11 @@ jobs:
         run: chmod +x gradlew
       - name: Create empty keystore
         run: echo "storeFile=/" > keystore.properties
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Android Emulator Runner
         uses: ReactiveCircus/android-emulator-runner@v2.30.1
         with:
@@ -43,4 +48,4 @@ jobs:
           # target: ${{ matrix.target }}
           arch: x86_64
 #           emulator-build: 7075546
-          script: './gradlew connectedFullDebugAndroidTest'
+          script: './gradlew connectedFullDebugAndroidTest :cofi-share:connectedDebugAndroidTest'
