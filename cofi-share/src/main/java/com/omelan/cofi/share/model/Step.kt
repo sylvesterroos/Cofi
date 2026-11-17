@@ -15,11 +15,9 @@ import org.json.JSONObject
 
 @Dao
 abstract class StepDao {
-    @WorkerThread
     @Query("SELECT * FROM step")
     abstract fun getAll(): LiveData<List<Step>>
 
-    @WorkerThread
     @Query("SELECT * FROM step WHERE recipe_id IS :recipeId ORDER BY order_in_recipe ASC")
     abstract fun getStepsForRecipe(recipeId: Int): LiveData<List<Step>>
 
@@ -92,19 +90,15 @@ enum class StepType(
 
 open class StepTypeConverter {
     @TypeConverter
-    open fun stepTypeToString(type: StepType): String {
-        return type.name
-    }
+    open fun stepTypeToString(type: StepType): String = type.name
 
     @TypeConverter
-    open fun stringToStepType(type: String): StepType {
-        return when (type) {
-            StepType.ADD_COFFEE.name -> StepType.ADD_COFFEE
-            StepType.WATER.name -> StepType.WATER
-            StepType.WAIT.name -> StepType.WAIT
-            StepType.OTHER.name -> StepType.OTHER
-            else -> StepType.OTHER
-        }
+    open fun stringToStepType(type: String): StepType = when (type) {
+        StepType.ADD_COFFEE.name -> StepType.ADD_COFFEE
+        StepType.WATER.name -> StepType.WATER
+        StepType.WAIT.name -> StepType.WAIT
+        StepType.OTHER.name -> StepType.OTHER
+        else -> StepType.OTHER
     }
 }
 

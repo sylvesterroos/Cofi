@@ -12,24 +12,24 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         // SQLite supports a limited operations for ALTER.
         // Create the new table
         db.execSQL(
-            "CREATE TABLE recipe_new (" +
-                    "id INTEGER NOT NULL," +
-                    "name TEXT NOT NULL," +
-                    "description TEXT NOT NULL," +
-                    "last_finished INTEGER NOT NULL," +
-                    "icon TEXT NOT NULL," +
-                    "PRIMARY KEY(id))",
+            "CREATE TABLE Recipe_new (" +
+                "id INTEGER NOT NULL," +
+                "name TEXT NOT NULL," +
+                "description TEXT NOT NULL," +
+                "last_finished INTEGER NOT NULL," +
+                "icon TEXT NOT NULL," +
+                "PRIMARY KEY(id))",
         )
         // Copy the data
         db.execSQL(
-            "INSERT INTO recipe_new (id, name, description, last_finished) " +
-                    "SELECT id, name, description, last_finished " +
-                    "FROM recipe",
+            "INSERT INTO Recipe_new (id, name, description, last_finished, icon) " +
+                "SELECT id, name, description, last_finished, 'grinder' " +
+                "FROM Recipe",
         )
         // Remove the old table
-        db.execSQL("DROP TABLE recipe")
+        db.execSQL("DROP TABLE Recipe")
         // Change the table name to the correct one
-        db.execSQL("ALTER TABLE recipe_new RENAME TO recipe")
+        db.execSQL("ALTER TABLE Recipe_new RENAME TO Recipe")
     }
 }
 
@@ -62,6 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getInstance(context: Context, createWithData: Boolean = true): AppDatabase {
             return INSTANCE ?: synchronized(this) {
+                INSTANCE?.let { return it }
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
@@ -72,18 +73,24 @@ abstract class AppDatabase : RoomDatabase() {
                             object : Callback() {
                                 override fun onCreate(db: SupportSQLiteDatabase) {
                                     super.onCreate(db)
-                                    val data = PrepopulateData(context)
+                                    val data = PrepopulateData(context.applicationContext)
                                     data.recipes.forEach {
                                         val values = ContentValues().apply {
                                             put("id", it.id)
                                             put("name", it.name)
                                             put("description", it.description)
                                             put("last_finished", it.lastFinished)
-                                            put("icon", it.recipeIcon.name)
+                                            put(
+                                                "icon",
+                                                RecipeIconTypeConverter().recipeIconToString(
+                                                    it.recipeIcon,
+                                                ),
+                                            )
                                         }
                                         db.insert(
                                             "recipe",
-                                            SQLiteDatabase.CONFLICT_REPLACE, values,
+                                            SQLiteDatabase.CONFLICT_REPLACE,
+                                            values,
                                         )
                                     }
                                     data.steps.forEach {
@@ -98,7 +105,8 @@ abstract class AppDatabase : RoomDatabase() {
                                         }
                                         db.insert(
                                             "step",
-                                            SQLiteDatabase.CONFLICT_REPLACE, values,
+                                            SQLiteDatabase.CONFLICT_REPLACE,
+                                            values,
                                         )
                                     }
                                 }

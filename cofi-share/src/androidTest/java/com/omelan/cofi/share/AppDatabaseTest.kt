@@ -46,7 +46,7 @@ class AppDatabaseTest {
             recipeDao.insertAll(recipe, recipe2)
         }
         val recipeById = recipeDao.get(2)
-        assertEquals(recipe2.name, recipeById.getOrAwaitValue().name)
+        assertEquals(recipe2.name, recipeById.getOrAwaitValue()?.name)
     }
 
     @Test

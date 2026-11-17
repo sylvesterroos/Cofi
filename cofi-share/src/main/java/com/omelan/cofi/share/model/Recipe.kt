@@ -10,7 +10,6 @@ import com.omelan.cofi.share.R
 import org.json.JSONArray
 import org.json.JSONObject
 
-
 enum class RecipeIcon(@DrawableRes val icon: Int, @StringRes val nameResId: Int) {
     Grinder(R.drawable.recipe_icon_coffee_grinder, R.string.name_grinder),
     Cup(R.drawable.recipe_icon_cup, R.string.name_cup),
@@ -45,7 +44,7 @@ abstract class RecipeDao {
     abstract fun getAll(): LiveData<List<Recipe>>
 
     @Query("SELECT * FROM recipe WHERE ID is :id")
-    abstract fun get(id: Int): LiveData<Recipe>
+    abstract fun get(id: Int): LiveData<Recipe?>
 
     @Insert
     abstract suspend fun insertAll(vararg recipes: Recipe)
@@ -103,14 +102,12 @@ data class Recipe(
             put(jsonName, name)
             put(jsonDescription, description)
             put(jsonRecipeIcon, recipeIcon.name)
-            put(jsonRecipeIcon, recipeIcon.name)
             if (withLastFinished) {
                 put(jsonLastFinished, lastFinished)
             }
             put(jsonSteps, steps?.serialize())
         }
 }
-
 
 fun JSONObject.toRecipe(withId: Boolean = false) = if (withId) {
     Recipe(

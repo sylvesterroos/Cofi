@@ -27,6 +27,8 @@ private fun JSONArray.toLicensesList(): List<License> {
     return list
 }
 
+private fun JSONObject.getStringOrNull(key: String) = if (isNull(key)) null else getString(key)
+
 fun String.parseJsonToDependencyList(): List<Dependency> {
     val jsonArray = JSONArray(this)
     val dependencyList = mutableListOf<Dependency>()
@@ -38,8 +40,8 @@ fun String.parseJsonToDependencyList(): List<Dependency> {
                 description = jsonObject.getString("description"),
                 version = jsonObject.getString("version"),
                 developers = jsonObject.getJSONArray("developers").toAuthorList(),
-                url = jsonObject.getString("url"),
-                year = jsonObject.getString("year"),
+                url = jsonObject.getStringOrNull("url"),
+                year = jsonObject.getStringOrNull("year"),
                 licenses = jsonObject.getJSONArray("licenses").toLicensesList(),
             ),
         )
